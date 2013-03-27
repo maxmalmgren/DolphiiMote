@@ -47,7 +47,7 @@ template <typename T, typename K = u32>
 class checked_array
 {
 public:
-  checked_array(T *data, K size) : data(data), _size(size), valid(true)
+  checked_array(T *data, K size) : data(data), _size(size), _valid(true)
   { }  
 
   checked_array sub_array(size_t sub_offset, K sub_size)
@@ -70,16 +70,51 @@ public:
     return _size;
   }
 
-  operator bool()
+  bool valid()
   {
-    return valid;
+    return _valid;
   }
 
 private:
   T *data;
   K _size;
-  const bool valid;
+  const bool _valid;
 
-  checked_array() : data(nullptr), _size(0), valid(false)
+  checked_array() : data(nullptr), _size(0), _valid(false)
   { }  
+};
+
+template <typename T>
+class optional
+{
+public:
+  optional(T value) : value(value), valid(true)
+  {  }
+
+  optional() : value(), valid(false)
+  { }
+
+  operator bool()
+  {
+    return valid;
+  }
+
+  void set(T value)
+  {
+    this->value = value;
+  }
+
+  void invalidate()
+  {
+    valid = false;
+  }
+
+  T& val()
+  {
+    return value;
+  }
+
+private:
+  bool valid;
+  T value;
 };

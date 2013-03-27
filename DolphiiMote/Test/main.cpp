@@ -6,7 +6,10 @@
 void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_data *data, void *userdata)
 {
   if(data->button_state & dolphiimote_BUTTON_A)
+  {
     std::cout << "A ";
+    dolphiimote_brief_rumble(wiimote_number);
+  }
   if(data->button_state & dolphiimote_BUTTON_B)
     std::cout << "B ";
   if(data -> button_state & dolphiimote_BUTTON_DPAD_DOWN)

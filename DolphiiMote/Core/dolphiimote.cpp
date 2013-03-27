@@ -23,17 +23,20 @@
 #include <vector>
 #include <functional>
 #include "Util/collections.h"
+#include "wiimote.h"
+#include <concurrent_priority_queue.h>
+#include "serialization.h"
 
 namespace dolphiimote
 {
   enum wiimote_capabilities { Unknown = 1, MotionPlus = 2 };
 
-  struct sub_array
+  struct range
   {
-    sub_array(u32 offset, u32 size) : offset(offset), size(size)
+    range(u32 offset, u32 size) : offset(offset), size(size)
     { }
 
-    sub_array() : offset(), size()
+    range() : offset(), size()
     { }
 
     u32 offset;
@@ -45,8 +48,12 @@ namespace dolphiimote
   
   std::map<wiimote_capabilities, std::function<void(checked_array<const u8>, dolphiimote_wiimote_data&)>> extension_retrievers;
   std::vector<std::pair<u16, std::function<void(u8, checked_array<const u8>, dolphiimote_wiimote_data&)>>> standard_retrievers;
+  std::map<u16, range> reporting_mode_extension_data_offset;
 
-  std::map<u16, sub_array> reporting_mode_extension_data_offset;
+  /* Probable state - since dolphin sometimes alter for example LED itself we cannot be certain. */
+  std::map<int, wiimote> current_wiimote_state;
+
+  Concurrency::concurrent_priority_queue<wiimote_message> messages;
 
   template <typename T>
   std::string to_hex2(T arg)
@@ -75,12 +82,6 @@ namespace dolphiimote
 
     if(extension_data.size() >= 6)
     {
-      auto num_1 = extension_data[1];
-      auto num_2 = extension_data[2];
-      auto num_5 = extension_data[5];
-      auto num_4 = extension_data[4];
-      auto num_3 = extension_data[3];
-
       output.valid_data_flags |= dolphiimote_MOTIONPLUS_VALID;
 
       output.motionplus.yaw_down_speed = extension_data[0] + ((u16)(extension_data[3] & speed_mask) << 6);
@@ -131,11 +132,11 @@ namespace dolphiimote
 
   void setup_extension_offsets()
   {
-    reporting_mode_extension_data_offset[0x32] = sub_array(4, 8);
-    reporting_mode_extension_data_offset[0x34] = sub_array(4, 19);
-    reporting_mode_extension_data_offset[0x35] = sub_array(7, 16);
-    reporting_mode_extension_data_offset[0x36] = sub_array(14, 9);
-    reporting_mode_extension_data_offset[0x37] = sub_array(17, 6);
+    reporting_mode_extension_data_offset[0x32] = range(4, 8);
+    reporting_mode_extension_data_offset[0x34] = range(4, 19);
+    reporting_mode_extension_data_offset[0x35] = range(7, 16);
+    reporting_mode_extension_data_offset[0x36] = range(14, 9);
+    reporting_mode_extension_data_offset[0x37] = range(17, 6);
   }
 
   void setup_data()
@@ -187,7 +188,7 @@ namespace dolphiimote
     if(reporting_mode_extension_data_offset.find(reporting_mode) != reporting_mode_extension_data_offset.end())
     {
       retrieve_extension_data(wiimote_number,
-                              data.sub_array(data + reporting_mode_extension_data_offset[reporting_mode].offset,
+                              data.sub_array(reporting_mode_extension_data_offset[reporting_mode].offset,
                                              reporting_mode_extension_data_offset[reporting_mode].size),
                               wiimote_data);
     }
@@ -204,8 +205,6 @@ namespace dolphiimote
 
     if(message_type > 0x30 && message_type < 0x37)
       handle_data_reporting(wiimote_number, message_type, u8_data);
-
-    //print_raw_data(wiimote_number, channel_id, u8_data, size);
   }
 
   void begin_determine_capabilities(int wiimote_number)
@@ -220,11 +219,70 @@ namespace dolphiimote
 
   void enable(int wiimote_number, wiimote_capabilities capabilities_to_enable)
   {
-      std::array<u8, 10> reportingMode = { 0xa2, 0x12, 0x00, 0x35  };
-      WiimoteReal::InterruptChannel(wiimote_number, 65, &reportingMode[0], sizeof(reportingMode));
-
       std::array<u8, 23> data = { 0xa2, 0x16, 0x04, 0xA6, 0x00, 0xFE, 0x01, 0x04 };
       WiimoteReal::InterruptChannel(wiimote_number, 65, &data[0], sizeof(data));
+
+      std::array<u8, 10> reportingMode = { 0xa2, 0x12, 0x00, 0x35  };
+      WiimoteReal::InterruptChannel(wiimote_number, 65, &reportingMode[0], sizeof(reportingMode));
+  }
+
+  void send_packet(int wiimote_number, const std::array<u8, 21>& data, size_t size, std::function<void(int)> callback)
+  {
+    messages.push(wiimote_message(wiimote_number, data, size, callback));
+  }
+
+  void send_packet(int wiimote_number, const std::array<u8, 21>& data, size_t size, steady_time_point future, std::function<void(int)> callback)
+  {
+    messages.push(wiimote_message(wiimote_number, future, data, size, callback));
+  }
+
+  std::vector<wiimote_message> get_expired_messages()
+  {
+    auto time = steady_time_point::clock::now();
+
+    std::vector<wiimote_message> expired_messages;
+
+    wiimote_message message;
+    while(messages.try_pop(message))
+    {
+      if(time > message.send_time())
+        expired_messages.push_back(message);
+      else
+      {
+        messages.push(message);
+        break;
+      }
+    }
+
+    return expired_messages;
+  }
+
+  void send_messages()
+  {
+    auto expired_messages = get_expired_messages();
+
+    for(auto& message : expired_messages)
+    {
+      WiimoteReal::InterruptChannel(message.wiimote(), 65, &message.message()[0], message.size());
+      message.on_sent()(message.wiimote());
+    }
+  }
+
+  void on_end_rumble(int wiimote_number)
+  {
+    dolphiimote::current_wiimote_state[wiimote_number].end_brief_rumble();
+  }
+
+  void do_rumble(int wiimote_number)
+  {
+      dolphiimote::current_wiimote_state[wiimote_number].begin_brief_rumble();
+      send_packet(wiimote_number, dolphiimote::serialization::start_rumble(), dolphiimote::serialization::rumble_size(), [](int x) { });
+
+      send_packet(wiimote_number,
+                               dolphiimote::serialization::stop_rumble(),
+                               dolphiimote::serialization::rumble_size(),
+                               dolphiimote::steady_time_point::clock::now() + std::chrono::milliseconds(200),
+                               on_end_rumble);
   }
 }
 
@@ -243,6 +301,7 @@ int dolphiimote_init(update_callback_t _callback, void *userdata)
 
   for(int wiimote = 0; wiimote < num_wiimotes; wiimote++)
   {
+    dolphiimote::current_wiimote_state[wiimote] = dolphiimote::wiimote();
     dolphiimote::begin_determine_capabilities(wiimote);
     dolphiimote::enable(wiimote, dolphiimote::check_capabilities(wiimote));
   }
@@ -250,8 +309,17 @@ int dolphiimote_init(update_callback_t _callback, void *userdata)
   return num_wiimotes;
 }
 
+void dolphiimote_brief_rumble(int wiimote_number)
+{
+  if(dolphiimote::current_wiimote_state.find(wiimote_number) != dolphiimote::current_wiimote_state.end() && !dolphiimote::current_wiimote_state[wiimote_number].rumble_active())
+    dolphiimote::do_rumble(wiimote_number);
+}
+
 void dolphiimote_update()
 {
   for(int i = 0; i < 4; i++)
+  {
+    dolphiimote::send_messages();
     WiimoteReal::Update(i);
+  }
 }

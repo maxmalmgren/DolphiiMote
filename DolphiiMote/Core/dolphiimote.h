@@ -26,6 +26,8 @@ typedef void (*update_callback_t)(unsigned int wiimote_number, struct dolphiimot
 int dolphiimote_init(update_callback_t on_update, void *callback_userdata);
 void dolphiimote_update();
 
+void dolphiimote_brief_rumble(int wiimote_number);
+
 /*
   These are the button states, as they are saved in dolphiimote_button_state
   and how they are sent by a Wiimote - but a Wiimote sends it in two

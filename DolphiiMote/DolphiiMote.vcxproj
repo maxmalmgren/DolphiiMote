@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\dolphiimote.cpp" />
+    <ClCompile Include="Core\serialization.cpp" />
     <ClCompile Include="Dolphin\IOWin.cpp" />
     <ClCompile Include="Dolphin\Timer.cpp" />
     <ClCompile Include="Dolphin\Wiimote.cpp" />
@@ -88,7 +89,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\dolphiimote.h" />
+    <ClInclude Include="Core\serialization.h" />
     <ClInclude Include="Core\Util\collections.h" />
+    <ClInclude Include="Core\wiimote.h" />
     <ClInclude Include="Dolphin\Atomic.h" />
     <ClInclude Include="Dolphin\Atomic_Win32.h" />
     <ClInclude Include="Dolphin\Common.h" />
