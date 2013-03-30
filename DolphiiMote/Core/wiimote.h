@@ -116,7 +116,6 @@ namespace dolphiimote
     std::array<u8, 21> _message;
     size_t message_size;
   };
-
 }
 
 #endif

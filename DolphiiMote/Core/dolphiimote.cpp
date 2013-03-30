@@ -52,6 +52,7 @@ namespace dolphiimote
 
   /* Probable state - since dolphin sometimes alter for example LED itself we cannot be certain. */
   std::map<int, wiimote> current_wiimote_state;
+  u16 brief_rumble_duration = 200;
 
   Concurrency::concurrent_priority_queue<wiimote_message> messages;
 
@@ -270,19 +271,16 @@ namespace dolphiimote
 
   void on_end_rumble(int wiimote_number)
   {
-    dolphiimote::current_wiimote_state[wiimote_number].end_brief_rumble();
+    current_wiimote_state[wiimote_number].end_brief_rumble();
   }
 
   void do_rumble(int wiimote_number)
   {
       dolphiimote::current_wiimote_state[wiimote_number].begin_brief_rumble();
-      send_packet(wiimote_number, dolphiimote::serialization::start_rumble(), dolphiimote::serialization::rumble_size(), [](int x) { });
-
-      send_packet(wiimote_number,
-                               dolphiimote::serialization::stop_rumble(),
-                               dolphiimote::serialization::rumble_size(),
-                               dolphiimote::steady_time_point::clock::now() + std::chrono::milliseconds(200),
-                               on_end_rumble);
+      send_packet(wiimote_number, dolphiimote::serialization::start_rumble(), dolphiimote::serialization::rumble_size(), [](int wiimote_number) {
+        auto time_to_end_vibration = dolphiimote::steady_time_point::clock::now() + std::chrono::milliseconds(brief_rumble_duration);
+        send_packet(wiimote_number, dolphiimote::serialization::stop_rumble(), dolphiimote::serialization::rumble_size(), time_to_end_vibration, on_end_rumble);                         
+      });      
   }
 }
 
