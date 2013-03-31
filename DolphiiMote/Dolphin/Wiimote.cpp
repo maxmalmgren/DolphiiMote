@@ -1,6 +1,5 @@
 
 #include "Common.h"
-#include <mutex>
 
 #include "Wiimote.h"
 #include "WiimoteReal.h"
@@ -10,7 +9,6 @@ namespace Wiimote
 
 void Shutdown()
 {
-
 }
 
 // if plugin isn't initialized, init and load config
@@ -52,9 +50,6 @@ void InterruptChannel(int _number, u16 _channelID, const void* _pData, u32 _Size
 //
 void Update(int _number)
 {
-	//PanicAlert( "Wiimote_Update" );
-
-	// TODO: change this to a try_to_lock, and make it give empty input on failure
 		WiimoteReal::Update(_number);
 }
 
@@ -79,9 +74,8 @@ unsigned int GetAttached()
 // input/output: ptr
 // input: mode
 //
-void DoState(unsigned char **ptr, int mode)
+void DoState(u8 **ptr, PointerWrap::Mode mode)
 {
-	// TODO:
 }
 
 // ___________________________________________________________________________
@@ -92,8 +86,6 @@ void DoState(unsigned char **ptr, int mode)
 //
 void EmuStateChange(EMUSTATE_CHANGE newState)
 {
-	// TODO
-	WiimoteReal::StateChange(newState);
 }
 
 }

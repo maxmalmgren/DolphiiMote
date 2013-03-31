@@ -2,6 +2,19 @@
 #include <iostream>
 #include "../Core/dolphiimote.h"
 #include <array>
+#include <thread>
+#include <sstream>
+#include <iomanip>
+#include <iostream>
+#include "../Core/Util/collections.h"
+
+template <typename T>
+std::string to_hex(T arg)
+{
+  std::stringstream sstream;
+  sstream << std::hex << std::uppercase << std::setw(2) << std::setfill('0')  << arg;
+  return sstream.str();
+}
 
 void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_data *data, void *userdata)
 {

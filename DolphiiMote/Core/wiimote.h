@@ -19,6 +19,7 @@
 #define _DOLPHIIMOTE_WIIMOTE_H
 
 #include "../Dolphin/CommonTypes.h"
+#include <chrono>
 #include <array>
 
 namespace dolphiimote

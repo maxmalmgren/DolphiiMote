@@ -24,12 +24,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <string>
-#include <sstream>
+#include <iostream>
+#include <stdarg.h>
 
 // SVN version number
 extern const char *scm_rev_str;
 extern const char *netplay_dolphin_ver;
+
+void format_string(char *fmt,va_list argptr, char *formatted_string);
+
+
+inline void PanicAlertT(char *fmt, ...) 
+{
+ va_list argptr;
+ va_start(argptr, fmt); 
+ fprintf(stdout, fmt, argptr);
+ va_end(argptr);
+}
 
 // Force enable logging in the right modes. For some reason, something had changed
 // so that debugfast no longer logged.
@@ -50,54 +61,9 @@ private:
 	void operator=(const NonCopyable&);
 };
 
+#include "Log.h"
 #include "CommonTypes.h"
 #include "CommonFuncs.h"
-#include <iostream>
-
-template <typename T1>
-inline void LOG(T1 arg)
-{
-  std::cout << arg << std::endl;
-}
-
-template <typename T1, typename T2>
-inline void LOG(T1 arg1, T2 arg2)
-{
-  std::cout << arg1 << arg2 << std::endl;
-}
-
-template <typename T1, typename T2, typename T3>
-inline void LOG(T1 arg1, T2 arg2, T3 arg3)
-{
-  std::cout << arg1 << arg2 << arg3 << std::endl;
-}
-
-template <typename T1, typename T2, typename T3, typename T4>
-inline void LOG(T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-{
-  std::cout << arg1 << arg2 << arg3 << arg4 << std::endl;
-}
-
-template <typename T1, typename T2, typename T3, typename T4, typename T5>
-inline void LOG(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
-{
-  std::cout << arg1 << arg2 << arg3 << arg4 << arg5 << std::endl;
-}
-
-template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-inline void LOG(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
-{
-  std::cout << arg1 << arg2 << arg3 << arg4 << arg5 << arg6 << std::endl;
-}
-
-
-template <typename T>
-inline std::string to_hex(T arg)
-{
-  std::stringstream sstream;
-  sstream << "0x" << std::hex << arg;
-  return sstream.str();
-}
 
 #ifdef __APPLE__
 // The Darwin ABI requires that stack frames be aligned to 16-byte boundaries.
@@ -179,7 +145,9 @@ inline std::string to_hex(T arg)
 // wxWidgets does not have a true dummy macro for this.
 #define _trans(a) a
 
-#if defined __GNUC__
+#if defined _M_GENERIC
+#  define _M_SSE 0x0
+#elif defined __GNUC__
 # if defined __SSE4_2__
 #  define _M_SSE 0x402
 # elif defined __SSE4_1__
@@ -190,7 +158,7 @@ inline std::string to_hex(T arg)
 #  define _M_SSE 0x300
 # endif
 #elif (_MSC_VER >= 1500) || __INTEL_COMPILER // Visual Studio 2008
-# define _M_SSE 0x402
+#  define _M_SSE 0x402
 #endif
 
 // Host communication.
@@ -201,7 +169,6 @@ enum HOST_COMM
 	WM_USER_CREATE,
 	WM_USER_SETCURSOR,
 	WM_USER_KEYDOWN,
-	WIIMOTE_DISCONNECT // Disconnect Wiimote
 };
 
 // Used for notification on emulation state

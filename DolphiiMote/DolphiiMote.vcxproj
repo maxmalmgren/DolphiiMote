@@ -82,6 +82,7 @@
     <ClCompile Include="Core\dolphiimote.cpp" />
     <ClCompile Include="Core\serialization.cpp" />
     <ClCompile Include="Dolphin\IOWin.cpp" />
+    <ClCompile Include="Dolphin\StringUtil.cpp" />
     <ClCompile Include="Dolphin\Timer.cpp" />
     <ClCompile Include="Dolphin\Wiimote.cpp" />
     <ClCompile Include="Dolphin\WiimoteReal.cpp" />
@@ -94,10 +95,15 @@
     <ClInclude Include="Core\wiimote.h" />
     <ClInclude Include="Dolphin\Atomic.h" />
     <ClInclude Include="Dolphin\Atomic_Win32.h" />
+    <ClInclude Include="Dolphin\ChunkFile.h" />
     <ClInclude Include="Dolphin\Common.h" />
     <ClInclude Include="Dolphin\CommonFuncs.h" />
+    <ClInclude Include="Dolphin\CommonPaths.h" />
     <ClInclude Include="Dolphin\CommonTypes.h" />
+    <ClInclude Include="Dolphin\dolphiimote_glue.h" />
     <ClInclude Include="Dolphin\FifoQueue.h" />
+    <ClInclude Include="Dolphin\Log.h" />
+    <ClInclude Include="Dolphin\StringUtil.h" />
     <ClInclude Include="Dolphin\Timer.h" />
     <ClInclude Include="Dolphin\Wiimote.h" />
     <ClInclude Include="Dolphin\WiimoteHid.h" />

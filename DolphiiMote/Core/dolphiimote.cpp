@@ -18,6 +18,7 @@
 #include "dolphiimote.h"
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <array>
 #include <map>
 #include <vector>
@@ -57,7 +58,7 @@ namespace dolphiimote
   Concurrency::concurrent_priority_queue<wiimote_message> messages;
 
   template <typename T>
-  std::string to_hex2(T arg)
+  std::string to_hex(T arg)
   {
     std::stringstream sstream;
     sstream << std::hex << std::uppercase << std::setw(2) << std::setfill('0')  << arg;
@@ -70,7 +71,7 @@ namespace dolphiimote
 
     for(size_t i = 0; i < size; i++)
     {
-      auto string = to_hex2((int)data[i]);
+      auto string = to_hex((int)data[i]);
       std::cout << " " << string << " ";
     }
 
@@ -282,6 +283,20 @@ namespace dolphiimote
         send_packet(wiimote_number, dolphiimote::serialization::stop_rumble(), dolphiimote::serialization::rumble_size(), time_to_end_vibration, on_end_rumble);                         
       });      
   }
+
+  class dolphiimote_wiimote_listener : public WiimoteReal::wiimote_listener
+  {
+  public:
+    virtual void data_received(int wiimote_number, const u16 channel, const void* const data, const u32 size)
+    {
+      dolphiimote::response_received(wiimote_number, channel, data, size);
+    }
+
+    virtual void wiimote_connection_changed(int wiimote_number, bool connected)
+    {
+
+    }
+  } listener;
 }
 
 int dolphiimote_init(update_callback_t _callback, void *userdata)
@@ -291,9 +306,10 @@ int dolphiimote_init(update_callback_t _callback, void *userdata)
   dolphiimote::callback = _callback;
   dolphiimote::callback_userdata = userdata;
 
-  WiimoteReal::AddCallback(dolphiimote::response_received);
+  WiimoteReal::listeners.add(&dolphiimote::listener);
   WiimoteReal::LoadSettings();
   WiimoteReal::Initialize();
+  WiimoteReal::Refresh();
 
   auto num_wiimotes = WiimoteReal::NumFoundWiimotes();
 

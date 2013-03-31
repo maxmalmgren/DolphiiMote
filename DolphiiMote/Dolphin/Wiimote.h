@@ -2,11 +2,11 @@
 #ifndef _WIIMOTE_H_
 #define _WIIMOTE_H_
 
+#include "ChunkFile.h"
+
 #define MAX_WIIMOTES	4
 
 #define WIIMOTE_INI_NAME	"WiimoteNew"
-
-#include "Common.h"
 
 enum
 {
@@ -25,7 +25,7 @@ void Shutdown();
 void Initialize(void* const hwnd);
 
 unsigned int GetAttached();
-void DoState(unsigned char **ptr, int mode);
+void DoState(u8 **ptr, PointerWrap::Mode mode);
 void EmuStateChange(EMUSTATE_CHANGE newState);
 
 void ControlChannel(int _number, u16 _channelID, const void* _pData, u32 _Size);
@@ -37,16 +37,11 @@ void Update(int _number);
 namespace WiimoteReal
 {
 
-unsigned int Initialize();
+void Initialize();
 void Shutdown();
 void Refresh();
 
 void LoadSettings();
-
-#ifdef _WIN32
-int PairUp(bool unpair = false);
-int UnPair();
-#endif
 
 }
 
