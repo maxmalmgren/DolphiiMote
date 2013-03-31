@@ -164,7 +164,7 @@ void DoState(PointerWrap &p);
 void StateChange(EMUSTATE_CHANGE newState);
 
 int FindWiimotes(Wiimote** wm, int max_wiimotes);
-int NumFoundWiimotes();
+u8 FoundWiimotesFlag();
 void ChangeWiimoteSource(unsigned int index, int source);
 
 bool IsValidBluetoothName(const std::string& name);

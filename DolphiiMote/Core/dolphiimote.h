@@ -22,9 +22,29 @@
 #include "../Dolphin/WiimoteReal.h"
 
 typedef void (*update_callback_t)(unsigned int wiimote_number, struct dolphiimote_wiimote_data *data_struct, void *userdata);
+typedef void (*connection_callback_t)(unsigned int wiimote_number, int connected);
+typedef void (*capabilities_callback_t)(unsigned int wiimote_number, struct dolphiimote_wiimote_data *data_struct, void *userdata);
 
-int dolphiimote_init(update_callback_t on_update, void *callback_userdata);
+struct dolphiimote_callbacks
+{  
+  update_callback_t data_received;
+  connection_callback_t connection_changed;
+  capabilities_callback_t capabilities_changed;
+
+  void *userdata;
+};
+
+int dolphiimote_init(dolphiimote_callbacks on_update, void *callback_userdata);
 void dolphiimote_update();
+
+/*
+  Valid modes:
+
+  0x30 - 0x3D
+  Check http://wiibrew.org/wiki/Wiimote#Data_Reporting for more information
+
+*/
+void dolphiimote_set_reporting_mode(int wiimote_number, uint8_t mode);
 
 void dolphiimote_brief_rumble(int wiimote_number);
 

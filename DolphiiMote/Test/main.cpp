@@ -61,11 +61,20 @@ void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_da
 
 int main()
 {
-  int num_wiimotes = dolphiimote_init(on_data_received, NULL);
+  dolphiimote_callbacks callbacks;
+  callbacks.data_received = on_data_received;
+
+  int wiimote_flags = dolphiimote_init(callbacks, NULL);
+
+  for(int i = 0; i < MAX_WIIMOTES; i++, wiimote_flags >>= 1)
+  {
+    if(wiimote_flags & 0x01)
+      dolphiimote_set_reporting_mode(i, 0x35);
+  }
 
   while(true)
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     dolphiimote_update();
   }
 }

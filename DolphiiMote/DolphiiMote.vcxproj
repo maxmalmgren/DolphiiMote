@@ -79,6 +79,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Core\capability_discoverer.cpp" />
+    <ClCompile Include="Core\data_reporter.cpp" />
     <ClCompile Include="Core\dolphiimote.cpp" />
     <ClCompile Include="Core\serialization.cpp" />
     <ClCompile Include="Dolphin\IOWin.cpp" />
@@ -89,7 +91,10 @@
     <ClCompile Include="Test\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\capability_discoverer.h" />
+    <ClInclude Include="Core\data_reporter.h" />
     <ClInclude Include="Core\dolphiimote.h" />
+    <ClInclude Include="Core\rumbler.h" />
     <ClInclude Include="Core\serialization.h" />
     <ClInclude Include="Core\Util\collections.h" />
     <ClInclude Include="Core\wiimote.h" />

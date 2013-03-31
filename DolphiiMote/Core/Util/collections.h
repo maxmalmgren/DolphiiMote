@@ -20,9 +20,19 @@
 
 #include <vector>
 #include <algorithm>
+#include <functional>
+#include <stdint.h>
+#include <concurrent_priority_queue.h>
 
 namespace dolphiimote
 {
+  template <typename T, typename K>
+  std::unique_ptr<T, K> make_unique(K* k)
+  {
+    return std::unique_ptr<T>(k);
+  }
+
+
   template <typename T, typename K>
   std::vector<std::pair<T, K>> pair_filter(std::vector<std::pair<T, K>> input, std::function<bool(T)> filter_func)
   {
@@ -122,6 +132,64 @@ namespace dolphiimote
   private:
     bool valid;
     T value;
+  };
+
+  struct range
+  {
+    range(uint32_t offset, uint32_t size) : offset(offset), size(size)
+    { }
+
+    range() : offset(), size()
+    { }
+
+    uint32_t offset;
+    uint32_t size;
+  };
+
+  template <typename T>
+  class timed_priority_queue
+  {
+  public:
+    timed_priority_queue(std::function<void(T&)> callback) : callback(callback)
+    { }
+
+    void dispatch_expired()
+    {
+      auto expired_elements = get_expired_elements();
+
+      for(auto& element : expired_elements)
+        callback(element);
+    }
+
+  void push(T &element)
+  {
+    elements.push(element);
+  }
+
+  private:
+    Concurrency::concurrent_priority_queue<T> elements;
+    std::function<void(T&)> callback;
+
+    std::vector<T> get_expired_elements()
+    {
+      auto time = steady_time_point::clock::now();
+
+      std::vector<T> expired_elements;
+
+      T element;
+      while(elements.try_pop(element))
+      {
+        if(time > element.send_time())
+          expired_elements.push_back(element);
+        else
+        {
+          elements.push(element);
+          break;
+        }
+      }
+
+      return expired_elements;
+    }
   };
 }
 #endif DOLPHIIMOTE_COLLECTIONS_H

@@ -35,5 +35,50 @@ namespace dolphiimote { namespace serialization {
     {
       return 3;
     }
+
+      void retrieve_motion_plus(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output)
+  {
+    u8 speed_mask = ~0x03;
+
+    if(extension_data.size() >= 6)
+    {
+      output.valid_data_flags |= dolphiimote_MOTIONPLUS_VALID;
+
+      output.motionplus.yaw_down_speed = extension_data[0] + ((u16)(extension_data[3] & speed_mask) << 6);
+      output.motionplus.roll_left_speed = extension_data[1] + ((u16)(extension_data[4] & speed_mask) << 6);
+      output.motionplus.pitch_left_speed = extension_data[2] + ((u16)(extension_data[5] & speed_mask) << 6);
+
+      output.motionplus.slow_modes = (extension_data[3] & 0x03) << 1 | (extension_data[4] & 0x02) >> 1;
+      output.motionplus.extension_connected = extension_data[4] & 0x01;
+    }
+  }
+
+  void retrieve_button_state(u8 reporting_mode, checked_array<const u8> data, dolphiimote_wiimote_data &output)
+  {
+    if(data.size() > 4)
+    {
+      u8 first = data[2];
+      u8 second = data[3];
+
+      output.button_state = first << 8 | second;
+    }
+  }
+
+  void retrieve_infrared_camera_data(u8 reporting_mode, checked_array<const u8> data, dolphiimote_wiimote_data &output)
+  {
+    
+  }
+
+  void retrieve_acceleration_data(u8 reporting_mode, checked_array<const u8> data, struct dolphiimote_wiimote_data &output)
+  {
+    if(data.size() > 7)
+    {    
+      output.valid_data_flags |= dolphiimote_ACCELERATION_VALID;
+
+      output.acceleration.x = data[4];
+      output.acceleration.y = data[5];
+      output.acceleration.z = data[6];
+    }
+  }
   }
 }
