@@ -30,6 +30,11 @@ void dolphiimote_brief_rumble(int wiimote_number)
   host.do_rumble(wiimote_number);
 }
 
+void dolphiimote_enable_capabilities(int wiimote_number, int capabilities)
+{
+  host.enable_capabilities(wiimote_number, (dolphiimote::wiimote_capabilities)capabilities);
+}
+
 void dolphiimote_set_reporting_mode(int wiimote_number, uint8_t mode)
 {
   host.request_reporting_mode(wiimote_number, mode);

@@ -46,7 +46,20 @@ void dolphiimote_update();
 */
 void dolphiimote_set_reporting_mode(int wiimote_number, uint8_t mode);
 
+/*
+  Rumble briefly - 200 ms
+*/
 void dolphiimote_brief_rumble(int wiimote_number);
+
+/*
+  Enable different features of the wiimote. The parameter 'capabilities'
+  is a flag containing one or more of the following:
+
+  MotionPlus = 2
+  Extension = 4
+  IR = 8
+*/
+void dolphiimote_enable_capabilities(int wiimote_number, int capabilities);
 
 /*
   These are the button states, as they are saved in dolphiimote_button_state

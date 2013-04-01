@@ -18,21 +18,21 @@
 #ifndef DOLPHIIMOTE_DATA_REPORTER_H
 #define DOLPHIIMOTE_DATA_REPORTER_H
 
-#include <vector>
-#include <algorithm>
-#include <functional>
-#include <stdint.h>
 #include "wiimote.h"
 #include "dolphiimote.h"
-#include <map>
+#include "data_sender.h"
 #include "Util/collections.h"
 
 namespace dolphiimote {  
   class data_reporter : public wiimote_data_handler
   {
   public:
+    data_reporter(data_sender &sender) : sender(sender)
+    { }
     void data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data);
     void request_reporting_mode(int wiimote_number, u8 reporting_mode);
+  private:
+    data_sender &sender;
   };
 }
 #endif DOLPHIIMOTE_DATA_REPORTER_H

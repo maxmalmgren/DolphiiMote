@@ -69,7 +69,10 @@ int main()
   for(int i = 0; i < MAX_WIIMOTES; i++, wiimote_flags >>= 1)
   {
     if(wiimote_flags & 0x01)
+    {
+      dolphiimote_enable_capabilities(i, 0x2);
       dolphiimote_set_reporting_mode(i, 0x35);
+    }
   }
 
   while(true)

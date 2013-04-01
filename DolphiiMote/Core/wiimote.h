@@ -84,6 +84,9 @@ namespace dolphiimote
     wiimote_message(int wiimote, std::array<u8, 21> message, size_t message_size, std::function<void(int)> callback, bool preserve_rumble = true) : wiimote_number(wiimote), _message(message), message_size(message_size), _send_time(steady_time_point::clock::now()), callback(callback), _preserve_rumble(preserve_rumble)
     { }
 
+    wiimote_message(int wiimote, std::array<u8, 21> message, size_t message_size, bool preserve_rumble = true) : wiimote_number(wiimote), _message(message), message_size(message_size), _send_time(steady_time_point::clock::now()), callback([](int x) { }), _preserve_rumble(preserve_rumble)
+    { }
+
     wiimote_message(int wiimote, steady_time_point send_time, std::array<u8, 21> message, size_t message_size, std::function<void(int)> callback,  bool preserve_rumble = true) : wiimote_number(wiimote), _message(message), message_size(message_size), _send_time(send_time), callback(callback), _preserve_rumble(preserve_rumble)
     { }
 

@@ -25,6 +25,7 @@
 #include "data_reporter.h"
 #include "capability_discoverer.h"
 #include "rumbler.h"
+#include "data_sender.h"
 
 namespace dolphiimote {
   class dolphiimote_host : public WiimoteReal::wiimote_listener
@@ -32,10 +33,10 @@ namespace dolphiimote {
   public:
     dolphiimote_host() : callbacks(callbacks),
                          current_wiimote_state(),
-                         messages(std::bind(&dolphiimote_host::send_message, this, std::placeholders::_1)),
-                         reporter(),
-                         rumble(current_wiimote_state, messages),
-                         discoverer(current_wiimote_state),
+                         sender(current_wiimote_state),
+                         reporter(sender),
+                         rumble(current_wiimote_state, sender),
+                         discoverer(current_wiimote_state, sender),
                          handlers(init_handlers())
     { }
 
@@ -70,6 +71,11 @@ namespace dolphiimote {
         handler->data_received(callbacks, wiimote_number, u8_data);
     }
 
+    void enable_capabilities(int wiimote_number, wiimote_capabilities capability)
+    {
+      discoverer.enable(wiimote_number, capability);
+    }
+
     void request_reporting_mode(int wiimote_number, u8 mode)
     {
       reporter.request_reporting_mode(wiimote_number, mode);
@@ -80,7 +86,7 @@ namespace dolphiimote {
 
     void update()
     {
-      messages.dispatch_expired();
+      sender();
     }
 
   private:
@@ -88,23 +94,11 @@ namespace dolphiimote {
 
     /* Probable state - since dolphin sometimes alter for example LED itself we cannot be certain. */
     std::map<int, wiimote> current_wiimote_state;    
-    timed_priority_queue<wiimote_message> messages;
+    data_sender sender;
     data_reporter reporter;
     rumbler rumble;
     capability_discoverer discoverer;
     std::vector<wiimote_data_handler*> handlers;
-
-    void send_message(wiimote_message &message)
-    {
-      if(message.preserve_rumble())
-      {
-        message.message()[2] &= ~(0x1);
-        message.message()[2] |= (u8)current_wiimote_state[message.wiimote()].rumble_active();
-      }
-
-      WiimoteReal::InterruptChannel(message.wiimote(), 65, &message.message()[0], message.size());
-      message.on_sent()(message.wiimote());
-    } 
 
     std::vector<wiimote_data_handler*> init_handlers()
     {
@@ -112,12 +106,6 @@ namespace dolphiimote {
       local_handlers.push_back(&reporter);
       local_handlers.push_back(&discoverer);
       return local_handlers;
-    }
-
-    void enable(int wiimote_number, wiimote_capabilities capabilities_to_enable)
-    {
-        std::array<u8, 23> data = { 0xa2, 0x16, 0x04, 0xA6, 0x00, 0xFE, 0x01, 0x04 };
-        WiimoteReal::InterruptChannel(wiimote_number, 65, &data[0], sizeof(data));
     }
   };
 }

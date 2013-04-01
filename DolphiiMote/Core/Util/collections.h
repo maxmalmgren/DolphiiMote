@@ -161,7 +161,7 @@ namespace dolphiimote
         callback(element);
     }
 
-  void push(T &element)
+  void push(const T &element)
   {
     elements.push(element);
   }

@@ -93,6 +93,7 @@
   <ItemGroup>
     <ClInclude Include="Core\capability_discoverer.h" />
     <ClInclude Include="Core\data_reporter.h" />
+    <ClInclude Include="Core\data_sender.h" />
     <ClInclude Include="Core\dolphiimote.h" />
     <ClInclude Include="Core\dolphiimote_host.h" />
     <ClInclude Include="Core\rumbler.h" />
