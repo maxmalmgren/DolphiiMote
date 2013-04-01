@@ -25,31 +25,12 @@
 namespace dolphiimote {
   class data_sender {
   public:
-    data_sender(std::map<int, wiimote> &current_wiimote_state) : messages(std::bind(&data_sender::send_message, this, std::placeholders::_1)), state(current_wiimote_state)
-    { }
-
-    void operator()()
-    {
-      messages.dispatch_expired();
-    }
-
-    void send(const wiimote_message &message)
-    {
-      messages.push(message);
-    }
+    data_sender(std::map<int, wiimote> &current_wiimote_state);
+    void operator()();
+    void send(const wiimote_message &message);
 
   private:
-    void send_message(wiimote_message &message)
-    {
-      if(message.preserve_rumble())
-      {
-        message.message()[2] &= ~(0x1);
-        message.message()[2] |= (u8)state[message.wiimote()].rumble_active();
-      }
-
-      WiimoteReal::InterruptChannel(message.wiimote(), 65, &message.message()[0], message.size());
-      message.on_sent()(message.wiimote());
-    }
+    void send_message(wiimote_message &message);
 
     timed_priority_queue<wiimote_message> messages;
     std::map<int, wiimote> &state;

@@ -81,7 +81,10 @@
   <ItemGroup>
     <ClCompile Include="Core\capability_discoverer.cpp" />
     <ClCompile Include="Core\data_reporter.cpp" />
+    <ClCompile Include="Core\data_sender.cpp" />
     <ClCompile Include="Core\dolphiimote.cpp" />
+    <ClCompile Include="Core\dolphiimote_host.cpp" />
+    <ClCompile Include="Core\rumbler.cpp" />
     <ClCompile Include="Core\serialization.cpp" />
     <ClCompile Include="Dolphin\IOWin.cpp" />
     <ClCompile Include="Dolphin\StringUtil.cpp" />

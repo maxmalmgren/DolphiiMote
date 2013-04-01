@@ -20,6 +20,22 @@
 namespace dolphiimote {
   void capability_discoverer::data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data)
   {
+    //TODO: Separate status requests and read reports.
+  }
 
+  void capability_discoverer::determine_capabilities(int wiimote_number)
+  {
+    //00 00 A6 20 00 05 at register address 0x(4)a600fa
+  }
+
+  void capability_discoverer::send_status_request(int wiimote_number)
+  {
+    //TODO: Send status report
+  }
+
+  void capability_discoverer::enable(int wiimote_number, wiimote_capabilities capabilities_to_enable)
+  {
+    std::array<u8, 21> data = { 0xa2, 0x16, 0x04, 0xA6, 0x00, 0xFE, 0x01, 0x04 };
+    sender.send(wiimote_message(wiimote_number, data, 8));
   }
 }

@@ -31,63 +31,16 @@ namespace dolphiimote {
   class dolphiimote_host : public WiimoteReal::wiimote_listener
   {
   public:
-    dolphiimote_host() : callbacks(callbacks),
-                         current_wiimote_state(),
-                         sender(current_wiimote_state),
-                         reporter(sender),
-                         rumble(current_wiimote_state, sender),
-                         discoverer(current_wiimote_state, sender),
-                         handlers(init_handlers())
-    { }
+    dolphiimote_host();
 
-    int init(dolphiimote_callbacks callbacks)
-    {
-      this->callbacks = callbacks;
+    int init(dolphiimote_callbacks callbacks);
+    void do_rumble(int wiimote_number);    
 
-      WiimoteReal::listeners.add(this);
-      WiimoteReal::LoadSettings();
-      WiimoteReal::Initialize();
-      WiimoteReal::Refresh();
-
-      auto wiimotes_flag = WiimoteReal::FoundWiimotesFlag();
-
-      for(int i = 0, flag = wiimotes_flag; i < MAX_WIIMOTES; i++, flag >>= 1)
-        if(flag & 0x01)
-          current_wiimote_state[i] = dolphiimote::wiimote();
-
-      return wiimotes_flag;
-    }
-
-    void do_rumble(int wiimote_number)
-    {
-      rumble.do_rumble(wiimote_number);
-    }
-
-    virtual void data_received(int wiimote_number, const u16 channel, const void* const data, const u32 size)
-    {
-      auto u8_data = checked_array<const u8>((const u8*)data, size);
-
-      for(auto& handler : handlers)
-        handler->data_received(callbacks, wiimote_number, u8_data);
-    }
-
-    void enable_capabilities(int wiimote_number, wiimote_capabilities capability)
-    {
-      discoverer.enable(wiimote_number, capability);
-    }
-
-    void request_reporting_mode(int wiimote_number, u8 mode)
-    {
-      reporter.request_reporting_mode(wiimote_number, mode);
-    }
-
-    virtual void wiimote_connection_changed(int wiimote_number, bool connected)
-    { }
-
-    void update()
-    {
-      sender();
-    }
+    void enable_capabilities(int wiimote_number, wiimote_capabilities capability);
+    void request_reporting_mode(int wiimote_number, u8 mode);
+    virtual void data_received(int wiimote_number, const u16 channel, const void* const data, const u32 size);
+    virtual void wiimote_connection_changed(int wiimote_number, bool connected);
+    void update();
 
   private:
     dolphiimote_callbacks callbacks;
@@ -100,13 +53,7 @@ namespace dolphiimote {
     capability_discoverer discoverer;
     std::vector<wiimote_data_handler*> handlers;
 
-    std::vector<wiimote_data_handler*> init_handlers()
-    {
-      std::vector<wiimote_data_handler*> local_handlers;
-      local_handlers.push_back(&reporter);
-      local_handlers.push_back(&discoverer);
-      return local_handlers;
-    }
+    std::vector<wiimote_data_handler*> init_handlers();
   };
 }
 #endif DOLPHIIMOTE_DOLPHIIMOTE_HOST_H
