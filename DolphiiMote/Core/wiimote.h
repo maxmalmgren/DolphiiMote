@@ -29,6 +29,16 @@ namespace dolphiimote
   typedef std::chrono::time_point<std::chrono::system_clock> steady_time_point;
   enum wiimote_capabilities { Unknown = 1, MotionPlus = 2, Extension = 4, IR = 8 };
 
+  inline wiimote_capabilities operator|(wiimote_capabilities a, wiimote_capabilities b)
+  {
+    return static_cast<wiimote_capabilities>(static_cast<int>(a) | static_cast<int>(b));
+  }
+
+  inline void operator|=(wiimote_capabilities &a, wiimote_capabilities b)
+  {
+    a = static_cast<wiimote_capabilities>(static_cast<int>(a) | static_cast<int>(b));
+  }
+
   class wiimote_data_handler
   {
   public:
@@ -52,7 +62,7 @@ namespace dolphiimote
   {
   public:
 
-    wiimote() : reporting_mode(), led_state(), rumble_state()
+    wiimote() : extension_id(), available_capabilities(), enabled_capabilities(), reporting_mode(), led_state(), rumble_state()
     { }
 
     void begin_brief_rumble()
@@ -70,9 +80,9 @@ namespace dolphiimote
       return rumble_state;
     }
 
-  private:
     std::array<u8, 6> extension_id;
-    bool motionplus;
+    wiimote_capabilities available_capabilities;
+    wiimote_capabilities enabled_capabilities;
     u8 reporting_mode;
     u8 led_state;
     bool rumble_state;  

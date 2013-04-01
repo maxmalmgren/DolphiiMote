@@ -109,6 +109,12 @@ namespace dolphiimote
     optional() : value(), valid(false)
     { }
 
+    void operator=(T &value)
+    {
+      this->value = value;
+      this->valid = true;
+    }
+
     operator bool()
     {
       return valid;
@@ -117,6 +123,7 @@ namespace dolphiimote
     void set(T value)
     {
       this->value = value;
+      valid = true;
     }
 
     void invalidate()

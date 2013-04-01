@@ -92,7 +92,8 @@ namespace dolphiimote {
                                 wiimote_data);
       }
 
-      callbacks.data_received(wiimote_number, &wiimote_data, callbacks.userdata);
+      if(callbacks.data_received != nullptr)
+        callbacks.data_received(wiimote_number, &wiimote_data, callbacks.userdata);
     }
 
     void data_reporter::data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data)

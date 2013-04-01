@@ -21,6 +21,7 @@
 #include <map>
 #include "wiimote.h"
 #include "data_sender.h"
+#include "wiimote_reader.h"
 
 namespace dolphiimote
 {
@@ -28,7 +29,7 @@ namespace dolphiimote
   {
   public:
     
-    capability_discoverer(std::map<int, wiimote> &wiimote_states, data_sender &sender) : wiimote_states(wiimote_states), sender(sender)
+    capability_discoverer(std::map<int, wiimote> &wiimote_states, data_sender &sender, wiimote_reader &reader) : wiimote_states(wiimote_states), sender(sender), reader(reader)
     { }
 
     virtual void data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data);
@@ -38,8 +39,12 @@ namespace dolphiimote
     void enable(int wiimote_number, wiimote_capabilities capabilities_to_enable);
 
   private:
+    void handle_motionplus_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
+    void dispatch_capabilities_changed(int wiimote, dolphiimote_callbacks callbacks);
+
     std::map<int, wiimote> &wiimote_states;
     data_sender &sender;
+    wiimote_reader &reader;
   };
 }
 #endif DOLPHIIMOTE_CAPABILITY_DISCOVERER_H

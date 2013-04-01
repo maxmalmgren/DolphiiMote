@@ -20,12 +20,47 @@
 namespace dolphiimote {
   void capability_discoverer::data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data)
   {
-    //TODO: Separate status requests and read reports.
+    u8 message_type = data[1];
+
+    // TODO: Handle status requests.
+  }
+
+  u8 read_error_bit(checked_array<const u8> data)
+  {
+    return data[4] & 0x0F;
+  }
+
+  void fill_capabilities(dolphiimote_capability_status &status, wiimote &mote)
+  {
+    status.available_capabilities = mote.available_capabilities;
+    status.enabled_capabilities = mote.enabled_capabilities;
+    std::memcpy(&status.extension_id, mote.extension_id.data(), 6);
+  }
+
+  void capability_discoverer::dispatch_capabilities_changed(int wiimote, dolphiimote_callbacks callbacks)
+  {
+    dolphiimote_capability_status status = { 0 };
+
+    fill_capabilities(status, wiimote_states[wiimote]);
+
+    if(callbacks.capabilities_changed)
+      callbacks.capabilities_changed(wiimote, &status, callbacks.userdata);
+  }
+
+  void capability_discoverer::handle_motionplus_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
+  {
+    u8 error_bit = read_error_bit(data);
+
+    if(error_bit == 0 && !(wiimote_states[wiimote_number].available_capabilities & wiimote_capabilities::MotionPlus))
+    {
+      wiimote_states[wiimote_number].available_capabilities |= wiimote_capabilities::MotionPlus;
+      dispatch_capabilities_changed(wiimote_number, callbacks);
+    }
   }
 
   void capability_discoverer::determine_capabilities(int wiimote_number)
   {
-    //00 00 A6 20 00 05 at register address 0x(4)a600fa
+    reader.read(wiimote_number, 0xA600FE, 0x02, std::bind(&capability_discoverer::handle_motionplus_id_message, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
   }
 
   void capability_discoverer::send_status_request(int wiimote_number)

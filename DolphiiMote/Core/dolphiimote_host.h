@@ -26,7 +26,7 @@
 #include "capability_discoverer.h"
 #include "rumbler.h"
 #include "data_sender.h"
-
+#include "wiimote_reader.h"
 namespace dolphiimote {
   class dolphiimote_host : public WiimoteReal::wiimote_listener
   {
@@ -37,6 +37,7 @@ namespace dolphiimote {
     void do_rumble(int wiimote_number);    
 
     void enable_capabilities(int wiimote_number, wiimote_capabilities capability);
+    void determine_capabilities(int wiimote_number);
     void request_reporting_mode(int wiimote_number, u8 mode);
     virtual void data_received(int wiimote_number, const u16 channel, const void* const data, const u32 size);
     virtual void wiimote_connection_changed(int wiimote_number, bool connected);
@@ -51,6 +52,7 @@ namespace dolphiimote {
     data_reporter reporter;
     rumbler rumble;
     capability_discoverer discoverer;
+    wiimote_reader reader;
     std::vector<wiimote_data_handler*> handlers;
 
     std::vector<wiimote_data_handler*> init_handlers();

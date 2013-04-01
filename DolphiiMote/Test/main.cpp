@@ -75,20 +75,23 @@ void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_da
   }
 }
 
+void on_capabilities_changed(unsigned int wiimote, dolphiimote_capability_status *status, void *userdata)
+{
+  dolphiimote_set_reporting_mode(wiimote, 0x35);
+}
+
 int main()
 {
   dolphiimote_callbacks callbacks = { 0 };
   callbacks.data_received = on_data_received;
+  callbacks.capabilities_changed = on_capabilities_changed;
 
   int wiimote_flags = dolphiimote_init(callbacks, NULL);
 
   for(int i = 0; i < MAX_WIIMOTES; i++, wiimote_flags >>= 1)
   {
     if(wiimote_flags & 0x01)
-    {
-      dolphiimote_enable_capabilities(i, 0x2);
-      dolphiimote_set_reporting_mode(i, 0x35);
-    }
+      dolphiimote_determine_capabilities(i);
   }
 
   while(true)

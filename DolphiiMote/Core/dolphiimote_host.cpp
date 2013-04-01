@@ -21,9 +21,10 @@ namespace dolphiimote {
   dolphiimote_host::dolphiimote_host() : callbacks(callbacks),
                                          current_wiimote_state(),
                                          sender(current_wiimote_state),
+                                         reader(sender),
                                          reporter(sender),
                                          rumble(current_wiimote_state, sender),
-                                         discoverer(current_wiimote_state, sender),
+                                         discoverer(current_wiimote_state, sender, reader),
                                          handlers(init_handlers())
   { }
 
@@ -58,6 +59,11 @@ namespace dolphiimote {
       handler->data_received(callbacks, wiimote_number, u8_data);
   }
 
+  void dolphiimote_host::determine_capabilities(int wiimote_number)
+  {
+    discoverer.determine_capabilities(wiimote_number);
+  }
+
   void dolphiimote_host::enable_capabilities(int wiimote_number, wiimote_capabilities capability)
   {
     discoverer.enable(wiimote_number, capability);
@@ -73,7 +79,8 @@ namespace dolphiimote {
 
   void dolphiimote_host::update()
   {
-    sender();
+    reader();
+    sender();    
   }
 
   std::vector<wiimote_data_handler*> dolphiimote_host::init_handlers()
@@ -81,6 +88,7 @@ namespace dolphiimote {
     std::vector<wiimote_data_handler*> local_handlers;
     local_handlers.push_back(&reporter);
     local_handlers.push_back(&discoverer);
+    local_handlers.push_back(&reader);
     return local_handlers;
   }
 }
