@@ -16,13 +16,12 @@
 // along with DolphiiMote.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <iostream>
-#include "../Core/dolphiimote.h"
+#include "../../Dolphiimote/Core/dolphiimote.h"
 #include <array>
 #include <thread>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
-#include "../Core/Util/collections.h"
 
 template <typename T>
 std::string to_hex(T arg)

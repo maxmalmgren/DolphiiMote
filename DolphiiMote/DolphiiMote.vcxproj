@@ -19,7 +19,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
     <CLRSupport>false</CLRSupport>
@@ -59,6 +59,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>setupapi.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>dolphiimote.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -71,6 +72,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>setupapi.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>dolphiimote.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -92,7 +94,6 @@
     <ClCompile Include="Dolphin\Timer.cpp" />
     <ClCompile Include="Dolphin\Wiimote.cpp" />
     <ClCompile Include="Dolphin\WiimoteReal.cpp" />
-    <ClCompile Include="Test\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\capability_discoverer.h" />
@@ -121,6 +122,9 @@
     <ClInclude Include="Dolphin\WiimoteHid.h" />
     <ClInclude Include="Dolphin\WiimoteReal.h" />
     <ClInclude Include="Dolphin\WiimoteRealBase.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dolphiimote.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
