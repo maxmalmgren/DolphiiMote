@@ -21,7 +21,7 @@ namespace dolphiimote {
     wiimote_reader::wiimote_reader(data_sender &sender) : sender(sender), read_states()
     { }
 
-    void insert_data(std::array<u8, 21> &data, uint32_t address, uint16_t size)
+    void insert_data(std::array<u8, 23> &data, uint32_t address, uint16_t size)
     {
       data[3] = (address >> 16) & 0xFF;
       data[4] = (address >> 8) & 0xFF;  //Requested data offset
@@ -45,7 +45,7 @@ namespace dolphiimote {
           mote.unfinished_request = mote.requests.front();
           mote.requests.pop();
 
-          std::array<u8, 21> request_data = { 0xA2, 0x17, 0x04 };
+          std::array<u8, 23> request_data = { 0xA2, 0x17, 0x04 };
           insert_data(request_data, mote.unfinished_request.val().address, mote.unfinished_request.val().size);
 
           sender.send(wiimote_message(i, request_data, 8));

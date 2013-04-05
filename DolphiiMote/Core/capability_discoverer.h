@@ -37,9 +37,14 @@ namespace dolphiimote
     void determine_capabilities(int wiimote_number);
     void send_status_request(int wiimote_number);
     void enable(int wiimote_number, wiimote_capabilities capabilities_to_enable);
+    
 
   private:
+    void update_extension_type_from_id(int wiimote_number);
+    void handle_extension_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
     void handle_motionplus_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
+    void init_and_identify_extension_controller(int wiimote_number);
+    void send_extension_id_read_message(int wiimote_number);
     void dispatch_capabilities_changed(int wiimote, dolphiimote_callbacks callbacks);
 
     std::map<int, wiimote> &wiimote_states;

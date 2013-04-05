@@ -72,7 +72,8 @@ struct dolphiimote_wiimote_data
 
 struct dolphiimote_capability_status
 {  
-  uint8_t extension_id[6];
+  uint64_t extension_id;
+  uint32_t extension_type;
 
   dolphiimote_capabilities available_capabilities;
   dolphiimote_capabilities enabled_capabilities;
@@ -142,5 +143,12 @@ void dolphiimote_enable_capabilities(unsigned int wiimote_number, dolphiimote_ca
 #define dolphiimote_BUTTON_TWO 0x0001
 
 #define dolphiimote_BUTTON_HOME 0x0080
+
+#define dolphiimote_EXTENSION_NONE 0x0000
+#define dolphiimote_EXTENSION_NUNCHUCK 0x0001
+#define dolphiimote_EXTENSION_CLASSIC_CONTROLLER 0x0002
+#define dolphiimote_EXTENSION_CLASSIC_CONTROLLER_PRO 0x0003
+#define dolphiimote_EXTENSION_GUITAR_HERO_GUITAR 0x0004
+#define dolphiimote_EXTENSION_GUITAR_HERO_WORLD_TOUR_DRUMS 0x0005
 
 #endif

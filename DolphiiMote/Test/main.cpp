@@ -34,11 +34,14 @@ std::string to_hex(T arg)
 
 void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_data *data, void *userdata)
 {
+  std::cout << " wiimote " << wiimote_number << ": ";
+
   if(data->button_state & dolphiimote_BUTTON_A)
   {
     std::cout << "A ";
     dolphiimote_brief_rumble(wiimote_number);
   }
+
   if(data->button_state & dolphiimote_BUTTON_B)
     std::cout << "B ";
   if(data -> button_state & dolphiimote_BUTTON_DPAD_DOWN)
@@ -77,7 +80,36 @@ void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_da
 
 void on_capabilities_changed(unsigned int wiimote, dolphiimote_capability_status *status, void *userdata)
 {
-  dolphiimote_set_reporting_mode(wiimote, 0x35);
+  std::cout << " wiimote " << wiimote << " capabilities:" << std::endl;
+  std::cout << "Extension: ";
+
+  switch(status->extension_type)
+  {
+    case dolphiimote_EXTENSION_NONE:
+      std::cout << "None";
+      break;
+    case dolphiimote_EXTENSION_NUNCHUCK:
+      std::cout << "Nunchuck";
+      break;
+    case dolphiimote_EXTENSION_CLASSIC_CONTROLLER:
+      std::cout << "Classic Controller";
+      break;
+    case dolphiimote_EXTENSION_CLASSIC_CONTROLLER_PRO:
+      std::cout << "Classic Controller Pro";
+      break;
+    case dolphiimote_EXTENSION_GUITAR_HERO_GUITAR:
+      std::cout << "Guitar";
+      break;
+    case dolphiimote_EXTENSION_GUITAR_HERO_WORLD_TOUR_DRUMS:
+      std::cout << "Drums";
+      break;
+  }
+
+  std::cout << std::endl;
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+
+  dolphiimote_set_reporting_mode(wiimote, 0x35);  
 }
 
 int main()

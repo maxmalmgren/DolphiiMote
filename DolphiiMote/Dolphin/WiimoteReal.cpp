@@ -51,8 +51,8 @@ u8 FoundWiimotesFlag()
 {
   std::lock_guard<std::recursive_mutex> lock(g_refresh_lock);
 
-  int found = 1;
-  for(int i = 0, it = 0; i < MAX_WIIMOTES; i++, it *= 2)
+  int found = 0;
+  for(int i = 0, it = 1; i < MAX_WIIMOTES; i++, it *= 2)
     if(g_wiimotes[i])
       found |= it;
 

@@ -24,8 +24,8 @@
 #include "dolphiimote.h"
 
 namespace dolphiimote { namespace serialization {
-  const std::array<u8, 21>& start_rumble();
-  const std::array<u8, 21>& stop_rumble();
+  const std::array<u8, 23>& start_rumble();
+  const std::array<u8, 23>& stop_rumble();
   size_t rumble_size();
   void retrieve_motion_plus(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output);
   void retrieve_button_state(u8 reporting_mode, checked_array<const u8> data, dolphiimote_wiimote_data &output);

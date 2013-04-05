@@ -27,6 +27,8 @@ namespace dolphiimote {
   public:
     data_sender(std::map<int, wiimote> &current_wiimote_state);
     void operator()();
+    void write_register(int wiimote_number, u32 address, std::array<u8, 16> bytes, u8 size, std::function<void(int)> callback);
+    void write_register(int wiimote_number, u32 address, std::array<u8, 16> bytes, u8 size);
     void send(const wiimote_message &message);
 
   private:

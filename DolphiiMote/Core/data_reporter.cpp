@@ -112,7 +112,7 @@ namespace dolphiimote {
     {
       if(reporting_mode >= 0x30 && reporting_mode <= 0x37)
       {
-        std::array<u8, 21> reportingMode = { 0xa2, 0x12, 0x00, reporting_mode };
+        std::array<u8, 23> reportingMode = { 0xa2, 0x12, 0x00, reporting_mode };
         sender.send(wiimote_message(wiimote, reportingMode, 4));
       }
     }

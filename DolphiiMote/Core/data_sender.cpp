@@ -26,6 +26,26 @@ namespace dolphiimote {
       messages.dispatch_expired();
     }
 
+    void data_sender::write_register(int wiimote_number, u32 address, std::array<u8, 16> bytes, u8 size, std::function<void(int)> callback)
+    {
+      std::array<u8, 23> data = { 0xA2, 0x16, 0x04, address >> 16, address >> 8, address, size };
+        
+      std::memset(data.data() + 7, 0, 16);
+      std::memcpy(data.data() + 7, bytes.data(), size);
+      
+      send(wiimote_message(wiimote_number, data, 23, callback));
+    }
+
+    void data_sender::write_register(int wiimote_number, u32 address, std::array<u8, 16> bytes, u8 size)
+    {
+      std::array<u8, 23> data = { 0xA2, 0x16, 0x04, address >> 16, address >> 8, address , size };
+        
+      std::memset(data.data() + 7, 0, 16);
+      std::memcpy(data.data() + 7, bytes.data(), size);
+      
+      send(wiimote_message(wiimote_number, data, 23, [](int x) { }));
+    }
+
     void data_sender::send(const wiimote_message &message)
     {
       messages.push(message);

@@ -18,15 +18,15 @@
 #include "serialization.h"
 namespace dolphiimote { namespace serialization {
 
-    std::array<u8, 21> _start_rumble = { 0xA2, 0x15, 0x01 };
-    std::array<u8, 21> _stop_rumble = { 0xA2, 0x15, 0x00 };
+    std::array<u8, 23> _start_rumble = { 0xA2, 0x15, 0x01 };
+    std::array<u8, 23> _stop_rumble = { 0xA2, 0x15, 0x00 };
 
-    const std::array<u8, 21>& start_rumble()
+    const std::array<u8, 23>& start_rumble()
     {
       return _start_rumble;
     }
 
-    const std::array<u8, 21>& stop_rumble()
+    const std::array<u8, 23>& stop_rumble()
     {
       return _stop_rumble;
     }

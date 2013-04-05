@@ -28,6 +28,7 @@ namespace dolphiimote
 {
   typedef std::chrono::time_point<std::chrono::system_clock> steady_time_point;
   enum wiimote_capabilities { Unknown = 1, MotionPlus = 2, Extension = 4, IR = 8 };
+  enum wiimote_extensions { None = 0, Nunchuck = 1, ClassicController = 2, ClassicControllerPro = 3, GHGuitar = 4, GHWorldTourDrums = 5 };
 
   inline wiimote_capabilities operator|(wiimote_capabilities a, wiimote_capabilities b)
   {
@@ -62,7 +63,7 @@ namespace dolphiimote
   {
   public:
 
-    wiimote() : extension_id(), available_capabilities(), enabled_capabilities(), reporting_mode(), led_state(), rumble_state()
+    wiimote() : extension_id(), available_capabilities(), enabled_capabilities(), extension_type(), reporting_mode(), led_state(), rumble_state()
     { }
 
     void begin_brief_rumble()
@@ -80,9 +81,10 @@ namespace dolphiimote
       return rumble_state;
     }
 
-    std::array<u8, 6> extension_id;
+    u64 extension_id;
     wiimote_capabilities available_capabilities;
     wiimote_capabilities enabled_capabilities;
+    wiimote_extensions extension_type;
     u8 reporting_mode;
     u8 led_state;
     bool rumble_state;  
@@ -91,13 +93,13 @@ namespace dolphiimote
   class wiimote_message
   {
   public:  
-    wiimote_message(int wiimote, std::array<u8, 21> message, size_t message_size, std::function<void(int)> callback, bool preserve_rumble = true) : wiimote_number(wiimote), _message(message), message_size(message_size), _send_time(steady_time_point::clock::now()), callback(callback), _preserve_rumble(preserve_rumble)
+    wiimote_message(int wiimote, std::array<u8, 23> message, size_t message_size, std::function<void(int)> callback, bool preserve_rumble = true) : wiimote_number(wiimote), _message(message), message_size(message_size), _send_time(steady_time_point::clock::now()), callback(callback), _preserve_rumble(preserve_rumble)
     { }
 
-    wiimote_message(int wiimote, std::array<u8, 21> message, size_t message_size, bool preserve_rumble = true) : wiimote_number(wiimote), _message(message), message_size(message_size), _send_time(steady_time_point::clock::now()), callback([](int x) { }), _preserve_rumble(preserve_rumble)
+    wiimote_message(int wiimote, std::array<u8, 23> message, size_t message_size, bool preserve_rumble = true) : wiimote_number(wiimote), _message(message), message_size(message_size), _send_time(steady_time_point::clock::now()), callback([](int x) { }), _preserve_rumble(preserve_rumble)
     { }
 
-    wiimote_message(int wiimote, steady_time_point send_time, std::array<u8, 21> message, size_t message_size, std::function<void(int)> callback,  bool preserve_rumble = true) : wiimote_number(wiimote), _message(message), message_size(message_size), _send_time(send_time), callback(callback), _preserve_rumble(preserve_rumble)
+    wiimote_message(int wiimote, steady_time_point send_time, std::array<u8, 23> message, size_t message_size, std::function<void(int)> callback,  bool preserve_rumble = true) : wiimote_number(wiimote), _message(message), message_size(message_size), _send_time(send_time), callback(callback), _preserve_rumble(preserve_rumble)
     { }
 
     wiimote_message() : wiimote_number(), _message(), message_size(), _send_time()
@@ -108,7 +110,7 @@ namespace dolphiimote
       return wiimote_number;
     }
 
-    std::array<u8, 21>& message()
+    std::array<u8, 23>& message()
     {
       return _message;
     }
@@ -143,7 +145,7 @@ namespace dolphiimote
     std::function<void(int)> callback;
     steady_time_point _send_time;
     int wiimote_number;
-    std::array<u8, 21> _message;
+    std::array<u8, 23> _message;
     size_t message_size;
   };
 }

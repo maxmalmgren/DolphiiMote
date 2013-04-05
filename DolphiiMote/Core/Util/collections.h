@@ -62,13 +62,13 @@ namespace dolphiimote
   class checked_array
   {
   public:
-    checked_array(T *data, K size) : data(data), _size(size), _valid(true)
+    checked_array(T *_data, K size) : _data(_data), _size(size), _valid(true)
     { }  
 
     checked_array sub_array(size_t sub_offset, K sub_size)
     {
       if(sub_offset > 0 && sub_offset + sub_size <= _size)
-        return checked_array(data + sub_offset, sub_size);
+        return checked_array(_data + sub_offset, sub_size);
 
       return checked_array();
     }
@@ -76,7 +76,7 @@ namespace dolphiimote
     const T operator[] (K index)
     {
       if(_size > index)
-        return data[index];
+        return _data[index];
       else return 0;
     }
 
@@ -90,12 +90,17 @@ namespace dolphiimote
       return _valid;
     }
 
+    const T* data()
+    {
+      return _data;
+    }
+
   private:
-    T *data;
+    T *_data;
     K _size;
     const bool _valid;
 
-    checked_array() : data(nullptr), _size(0), _valid(false)
+    checked_array() : _data(nullptr), _size(0), _valid(false)
     { }  
   };
 
