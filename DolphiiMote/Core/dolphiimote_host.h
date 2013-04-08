@@ -31,9 +31,8 @@ namespace dolphiimote {
   class dolphiimote_host : public WiimoteReal::wiimote_listener
   {
   public:
-    dolphiimote_host();
+    dolphiimote_host(dolphiimote_callbacks callbacks);
 
-    int init(dolphiimote_callbacks callbacks);
     void do_rumble(int wiimote_number);    
 
     void enable_capabilities(int wiimote_number, wiimote_capabilities::type capability);
@@ -42,11 +41,13 @@ namespace dolphiimote {
     virtual void data_received(int wiimote_number, const u16 channel, const void* const data, const u32 size);
     virtual void wiimote_connection_changed(int wiimote_number, bool connected);
     void update();
+    int number_of_wiimotes();
 
   private:
     dolphiimote_callbacks callbacks;
 
     /* Probable state - since dolphin sometimes alter for example LED itself we cannot be certain. */
+    int init();
     std::map<int, wiimote> current_wiimote_state;    
     data_sender sender;
     data_reporter reporter;
@@ -54,8 +55,8 @@ namespace dolphiimote {
     capability_discoverer discoverer;
     wiimote_reader reader;
     std::vector<wiimote_data_handler*> handlers;
-
     std::vector<wiimote_data_handler*> init_handlers();
+    int wiimotes_flag;
   };
 }
 #endif DOLPHIIMOTE_DOLPHIIMOTE_HOST_H

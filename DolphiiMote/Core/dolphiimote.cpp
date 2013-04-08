@@ -20,38 +20,39 @@ extern "C"
 }
 #include "dolphiimote_host.h"
 
-dolphiimote::dolphiimote_host host;
+std::unique_ptr<dolphiimote::dolphiimote_host> host;
 
 int dolphiimote_init(dolphiimote_callbacks _callback, void *userdata)
 {
-  return host.init(_callback);
+  host = std::unique_ptr<dolphiimote::dolphiimote_host>(new dolphiimote::dolphiimote_host(_callback));
+  return host->number_of_wiimotes();
 }
 
 void dolphiimote_brief_rumble(unsigned int  wiimote_number)
 {
-  host.do_rumble(wiimote_number);
+  host->do_rumble(wiimote_number);
 }
 
 void dolphiimote_enable_capabilities(unsigned int wiimote_number, dolphiimote_capabilities capabilities)
 {
-  host.enable_capabilities(wiimote_number, (dolphiimote::wiimote_capabilities::type)capabilities);
+  host->enable_capabilities(wiimote_number, (dolphiimote::wiimote_capabilities::type)capabilities);
 }
 
 void dolphiimote_determine_capabilities(unsigned int wiimote_number)
 {
-  host.determine_capabilities(wiimote_number);
+  host->determine_capabilities(wiimote_number);
 }
 
 void dolphiimote_set_reporting_mode(unsigned int wiimote_number, uint8_t mode)
 {
-  host.request_reporting_mode(wiimote_number, mode);
+  host->request_reporting_mode(wiimote_number, mode);
 }
 
 void dolphiimote_update()
 {
   for(int i = 0; i < 4; i++)
   {
-    host.update();
+    host->update();
     WiimoteReal::Update(i);
   }
 }

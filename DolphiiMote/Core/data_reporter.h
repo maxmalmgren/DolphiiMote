@@ -27,12 +27,15 @@ namespace dolphiimote {
   class data_reporter : public wiimote_data_handler
   {
   public:
-    data_reporter(data_sender &sender) : sender(sender)
+    data_reporter(std::map<int, wiimote> &wiimote_states, data_sender &sender) : wiimote_states(wiimote_states), sender(sender)
     { }
     void data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data);
     void request_reporting_mode(int wiimote_number, u8 reporting_mode);
   private:
+    std::map<int, wiimote> &wiimote_states;
     data_sender &sender;
+
+    void handle_data_reporting(dolphiimote_callbacks &callbacks, int wiimote_number, u8 reporting_mode, checked_array<const u8> data);
   };
 }
 #endif DOLPHIIMOTE_DATA_REPORTER_H

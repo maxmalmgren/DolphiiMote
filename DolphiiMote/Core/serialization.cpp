@@ -53,6 +53,22 @@ namespace dolphiimote { namespace serialization {
     }
   }
 
+  void retrieve_nunchuck(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output)
+  {
+    if(extension_data.size() >= 6)
+    {    
+      output.valid_data_flags |= dolphiimote_NUNCHUCK_VALID;
+
+      output.nunchuck.stick_x = extension_data[0];
+      output.nunchuck.stick_y = extension_data[1];
+      output.nunchuck.x = (extension_data[2] << 2) | (extension_data[5] & 0x0C) >> 2;
+      output.nunchuck.y = (extension_data[3] << 2) | (extension_data[5] & 0x30) >> 4;
+      output.nunchuck.z = (extension_data[4] << 2) | (extension_data[5] & 0xC0) >> 6;
+
+      output.nunchuck.buttons = ~(extension_data[5]) & 0x3;
+    }
+  }
+
   void retrieve_button_state(u8 reporting_mode, checked_array<const u8> data, dolphiimote_wiimote_data &output)
   {
     if(data.size() > 4)

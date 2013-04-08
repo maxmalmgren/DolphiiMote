@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <Windows.h>
 
+int state = 0;
+
 void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_data *data, void *userdata)
 {
   printf("wiimote %i:\t", wiimote_number);
@@ -26,11 +28,26 @@ void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_da
   if(data->button_state & dolphiimote_BUTTON_A)
   {
     printf("A ");
+
+    if(state == 0)
+    {
+      state = 1;
+      dolphiimote_enable_capabilities(wiimote_number, dolphiimote_CAPABILITIES_MOTION_PLUS);
+    }
+
     dolphiimote_brief_rumble(wiimote_number);
   }
 
   if(data->button_state & dolphiimote_BUTTON_B)
+  {
     printf("B ");
+    if(state == 1)
+    {
+      state = 0;
+      dolphiimote_enable_capabilities(wiimote_number, dolphiimote_CAPABILITIES_EXTENSION);
+    }
+  }
+
   if(data -> button_state & dolphiimote_BUTTON_DPAD_DOWN)
     printf("Down ");
   if(data -> button_state & dolphiimote_BUTTON_DPAD_RIGHT)
@@ -56,13 +73,20 @@ void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_da
   if(data->valid_data_flags & dolphiimote_MOTIONPLUS_VALID)
     printf("Motion Plus: %04X%04X%04X\t", data->motionplus.yaw_down_speed, data->motionplus.pitch_left_speed, data->motionplus.roll_left_speed);
 
+  if(data->valid_data_flags & dolphiimote_NUNCHUCK_VALID)
+  {
+    int c = data->nunchuck.buttons & dolphiimote_NUNCHUCK_BUTTON_C;
+    int z = data->nunchuck.buttons & dolphiimote_NUNCHUCK_BUTTON_Z;
+    printf("Nunchuck: C: %i, Z: %i, Acc: %02X%02X%02X\n Stick X: %i, Y: %i\t", c, z, data->nunchuck.x, data->nunchuck.y, data->nunchuck.z, data->nunchuck.stick_x, data->nunchuck.stick_y);
+  }
+
   printf("\n");
 }
 
 void on_capabilities_changed(unsigned int wiimote, dolphiimote_capability_status *status, void *userdata)
 {
- printf("wiimote %i capabilities:\n", wiimote);
- printf("Extension: ");
+  printf("wiimote %i capabilities:\n", wiimote);
+  printf("Extension: ");
 
   switch(status->extension_type)
   {
@@ -87,6 +111,33 @@ void on_capabilities_changed(unsigned int wiimote, dolphiimote_capability_status
   }
 
   printf("\n");
+
+  printf("Available:");
+
+  if(status->available_capabilities & dolphiimote_CAPABILITIES_MOTION_PLUS)
+    printf(" MotionPlus");
+
+  if(status->available_capabilities & dolphiimote_CAPABILITIES_EXTENSION)
+    printf(" Extension");
+
+  if(status->available_capabilities & dolphiimote_CAPABILITIES_IR)
+    printf(" IR");
+
+  printf("\n");
+
+  printf("Enabled:");
+
+  if(status->enabled_capabilities & dolphiimote_CAPABILITIES_MOTION_PLUS)
+    printf(" MotionPlus");
+
+  if(status->enabled_capabilities & dolphiimote_CAPABILITIES_EXTENSION)
+    printf(" Extension");
+
+  if(status->enabled_capabilities & dolphiimote_CAPABILITIES_IR)
+    printf(" IR");
+  
+  printf("\n");
+
   Sleep(500);
   dolphiimote_set_reporting_mode(wiimote, 0x35);  
 }

@@ -18,11 +18,55 @@
 #include "capability_discoverer.h"
 
 namespace dolphiimote {
+  
   void capability_discoverer::data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data)
   {
     u8 message_type = data[1];
 
-    // TODO: Handle status requests.
+    if(message_type == 0x20)
+      handle_status_report(wiimote_number, data);
+  }
+
+  void extension_controller_changed(bool extension_controller_connected, wiimote& mote, bool& changed)
+  {
+    if(extension_controller_connected && !is_set(mote.available_capabilities, wiimote_capabilities::Extension))
+    {
+      mote.available_capabilities |= wiimote_capabilities::Extension;
+      changed = true;
+    }
+
+    if(!extension_controller_connected && is_set(mote.available_capabilities, wiimote_capabilities::Extension))
+    {
+      mote.available_capabilities &= ~wiimote_capabilities::Extension;
+      changed = true;
+    }
+  }
+
+  void capability_discoverer::handle_status_report(int wiimote_number, checked_array<const u8> data)
+  {
+    if(data.size() < 5)
+      return;
+
+    auto& mote = wiimote_states[wiimote_number];
+
+    u8 flags = data[4];
+
+    bool battery_low = flags & 0x01;
+    bool extension_controller_connected = flags & 0x02;
+    bool speaker_enabled = flags & 0x04;
+    bool ir_camera_enabled = flags & 0x08;
+
+    bool led_1 = flags & 0x10;
+    bool led_2 = flags & 0x20;
+    bool led_3 = flags & 0x40;
+    bool led_4 = flags & 0x80;
+
+    bool capabilities_changed = false;
+
+    extension_controller_changed(flags & 0x02, mote, capabilities_changed);
+
+    if(capabilities_changed)
+      dispatch_capabilities_changed(wiimote_number, callbacks);
   }
 
   u8 read_error_bit(checked_array<const u8> data)
@@ -147,15 +191,26 @@ namespace dolphiimote {
     //TODO: Send status report
   }
 
-  void enable_motion_plus_no_passthrough(int wiimote_number, data_sender &sender)
+  void capability_discoverer::enable_motion_plus_no_passthrough(int wiimote_number)
   {
     sender.write_register(wiimote_number, 0xA600FE, 0x4, 1);
+
+    wiimote_states[wiimote_number].enabled_capabilities |= wiimote_capabilities::MotionPlus;
+    wiimote_states[wiimote_number].enabled_capabilities &= ~wiimote_capabilities::Extension;
+
+    wiimote_states[wiimote_number].extension_type = 0;
+    wiimote_states[wiimote_number].extension_id = 0;
+
+    dispatch_capabilities_changed(wiimote_number, callbacks);
   }
 
   void capability_discoverer::enable_only_extension(int wiimote)
   {
     if(is_set(wiimote_states[wiimote].enabled_capabilities, wiimote_capabilities::MotionPlus))
-      sender.write_register(wiimote, 0xA400F0, 0x55, 1);  //According to Wiibrew: Writing 0x55 to 0x(4)A400F0 deactivates the MotionPlus      
+    {
+      sender.write_register(wiimote, 0xA400F0, 0x55, 1);  //According to Wiibrew: Writing 0x55 to 0x(4)A400F0 deactivates the MotionPlus
+      wiimote_states[wiimote].enabled_capabilities &= ~wiimote_capabilities::MotionPlus;
+    }
 
     if(!is_set(wiimote_states[wiimote].enabled_capabilities, wiimote_capabilities::Extension))
       init_and_identify_extension_controller(wiimote);
@@ -165,13 +220,13 @@ namespace dolphiimote {
   {
     if(is_set(capabilities_to_enable, wiimote_capabilities::Extension) && is_set(capabilities_to_enable, wiimote_capabilities::MotionPlus))
     {
-      enable_motion_plus_no_passthrough(wiimote_number, sender);
+      enable_motion_plus_no_passthrough(wiimote_number);
       //TODO: Implement passthrough mode for nunchuck atleast.
     }
     else if(is_set(capabilities_to_enable, wiimote_capabilities::Extension))
       enable_only_extension(wiimote_number);
     else if(is_set(capabilities_to_enable, wiimote_capabilities::MotionPlus))
-      enable_motion_plus_no_passthrough(wiimote_number, sender);
+      enable_motion_plus_no_passthrough(wiimote_number);
     else
     {
       //Don't really need to disable; doesn't hurt.

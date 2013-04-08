@@ -29,7 +29,7 @@ namespace dolphiimote
   {
   public:
     
-    capability_discoverer(std::map<int, wiimote> &wiimote_states, data_sender &sender, wiimote_reader &reader) : wiimote_states(wiimote_states), sender(sender), reader(reader)
+    capability_discoverer(std::map<int, wiimote> &wiimote_states, dolphiimote_callbacks callbacks, data_sender &sender, wiimote_reader &reader) : wiimote_states(wiimote_states), callbacks(callbacks), sender(sender), reader(reader)
     { }
 
     virtual void data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data);
@@ -40,6 +40,7 @@ namespace dolphiimote
     
 
   private:
+    void handle_status_report(int wiimote_number, checked_array<const u8> data);
     void update_extension_type_from_id(int wiimote_number);
     void handle_extension_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
     void handle_motionplus_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
@@ -48,9 +49,11 @@ namespace dolphiimote
     void dispatch_capabilities_changed(int wiimote, dolphiimote_callbacks callbacks);
     void handle_motion_plus_and_extension_enabling(int wiimote_number, wiimote_capabilities::type capabilities_to_enable);
 
+    void enable_motion_plus_no_passthrough(int wiimote_number);
     void enable_only_extension(int wiimote);
 
     std::map<int, wiimote> &wiimote_states;
+    dolphiimote_callbacks callbacks;
     data_sender &sender;
     wiimote_reader &reader;
   };

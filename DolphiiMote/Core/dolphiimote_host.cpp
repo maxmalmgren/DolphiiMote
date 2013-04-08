@@ -18,20 +18,19 @@
 #include "dolphiimote_host.h"
 
 namespace dolphiimote {
-  dolphiimote_host::dolphiimote_host() : callbacks(callbacks),
-                                         current_wiimote_state(),
-                                         sender(current_wiimote_state),
-                                         reader(sender),
-                                         reporter(sender),
-                                         rumble(current_wiimote_state, sender),
-                                         discoverer(current_wiimote_state, sender, reader),
-                                         handlers(init_handlers())
+  dolphiimote_host::dolphiimote_host(dolphiimote_callbacks callbacks) : callbacks(callbacks),
+                                                                        current_wiimote_state(),
+                                                                        sender(current_wiimote_state),
+                                                                        reader(sender),
+                                                                        reporter(current_wiimote_state, sender),
+                                                                        rumble(current_wiimote_state, sender),
+                                                                        discoverer(current_wiimote_state, callbacks, sender, reader),
+                                                                        handlers(init_handlers()),
+                                                                        wiimotes_flag(init())
   { }
 
-  int dolphiimote_host::init(dolphiimote_callbacks callbacks)
+  int dolphiimote_host::init()
   {
-    this->callbacks = callbacks;
-
     WiimoteReal::listeners.add(this);
     WiimoteReal::LoadSettings();
     WiimoteReal::Initialize();
@@ -62,6 +61,11 @@ namespace dolphiimote {
   void dolphiimote_host::determine_capabilities(int wiimote_number)
   {
     discoverer.determine_capabilities(wiimote_number);
+  }
+
+  int dolphiimote_host::number_of_wiimotes()
+  {
+    return wiimotes_flag;
   }
 
   void dolphiimote_host::enable_capabilities(int wiimote_number, wiimote_capabilities::type capability)

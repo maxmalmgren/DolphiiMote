@@ -47,8 +47,18 @@ typedef uint16_t dolphiimote_capabilities;
 */
 typedef struct dolphiimote_acceleration
 {
-  unsigned char x, y, z;
+  uint16_t x, y, z;
 } dolphiimote_acceleration;
+
+typedef struct dolphiimote_nunchuck
+{
+  uint8_t stick_x;
+  uint8_t stick_y;
+
+  uint16_t x, y, z;
+  uint8_t buttons;
+
+} dolphiimote_nunchuck;
 
 typedef struct dolphiimote_motionplus
 {
@@ -65,8 +75,10 @@ typedef struct dolphiimote_wiimote_data
   dolphiimote_button_state button_state;
 
   unsigned int valid_data_flags;
-  struct dolphiimote_acceleration acceleration;
-  struct dolphiimote_motionplus motionplus;
+
+  dolphiimote_acceleration acceleration;
+  dolphiimote_motionplus motionplus;
+  dolphiimote_nunchuck nunchuck;
 } dolphiimote_wiimote_data;
 
 typedef struct dolphiimote_capability_status
@@ -126,6 +138,7 @@ void dolphiimote_enable_capabilities(unsigned int wiimote_number, dolphiimote_ca
 */
 #define dolphiimote_ACCELERATION_VALID 0x0002
 #define dolphiimote_MOTIONPLUS_VALID 0x0004
+#define dolphiimote_NUNCHUCK_VALID 0x0008
 
 #define dolphiimote_BUTTON_DPAD_LEFT 0x0100
 #define dolphiimote_BUTTON_DPAD_RIGHT 0x0200
@@ -142,6 +155,9 @@ void dolphiimote_enable_capabilities(unsigned int wiimote_number, dolphiimote_ca
 #define dolphiimote_BUTTON_TWO 0x0001
 
 #define dolphiimote_BUTTON_HOME 0x0080
+
+#define dolphiimote_NUNCHUCK_BUTTON_Z 0x01
+#define dolphiimote_NUNCHUCK_BUTTON_C 0x02
 
 #define dolphiimote_EXTENSION_NONE 0x0000
 #define dolphiimote_EXTENSION_NUNCHUCK 0x0001

@@ -31,6 +31,7 @@ namespace dolphiimote {
       standard_retrievers.push_back(std::make_pair(8 | 64 | 128, serialization::retrieve_infrared_camera_data)); 
 
       extension_retrievers[wiimote_extensions::MotionPlus] = serialization::retrieve_motion_plus;
+      extension_retrievers[wiimote_extensions::Nunchuck] = serialization::retrieve_nunchuck;
     }
 
     void setup_extension_offsets()
@@ -60,7 +61,7 @@ namespace dolphiimote {
       return result;
     }
 
-    void retrieve_standard_data(u8 reporting_mode, checked_array<const u8> data, dolphiimote_wiimote_data& wiimote_data)
+    void retrieve_standard_data(u8 reporting_mode, wiimote& state, checked_array<const u8> data, dolphiimote_wiimote_data& wiimote_data)
     {
       u16 maskable_reporting_mode = to_maskable(reporting_mode);
       std::function<bool(u16)> filter = [=](u16 mask) { return (maskable_reporting_mode & mask) > 0; };
@@ -70,23 +71,24 @@ namespace dolphiimote {
         retriever(reporting_mode, data, wiimote_data);
     }
 
-    void retrieve_extension_data(int wiimote_number, checked_array<const u8> data, dolphiimote_wiimote_data &output)
+    void retrieve_extension_data(int wiimote_number, wiimote& state, checked_array<const u8> data, dolphiimote_wiimote_data &output)
     {
-      wiimote_extensions::type enabled_extension = wiimote_extensions::MotionPlus;
+      wiimote_extensions::type enabled_extension = state.extension_type;
 
       if(extension_retrievers.find(enabled_extension) != extension_retrievers.end())
         extension_retrievers[enabled_extension](data, output);
     }
 
-    void handle_data_reporting(dolphiimote_callbacks &callbacks, int wiimote_number, u8 reporting_mode, checked_array<const u8> data)
+    void data_reporter::handle_data_reporting(dolphiimote_callbacks &callbacks, int wiimote_number, u8 reporting_mode, checked_array<const u8> data)
     {
       dolphiimote_wiimote_data wiimote_data = { 0 };
 
-      retrieve_standard_data(reporting_mode, data, wiimote_data);
+      retrieve_standard_data(reporting_mode, wiimote_states[wiimote_number], data, wiimote_data);
 
       if(reporting_mode_extension_data_offset.find(reporting_mode) != reporting_mode_extension_data_offset.end())
       {
         retrieve_extension_data(wiimote_number,
+                                wiimote_states[wiimote_number],
                                 data.sub_array(reporting_mode_extension_data_offset[reporting_mode].offset,
                                                reporting_mode_extension_data_offset[reporting_mode].size),
                                 wiimote_data);
