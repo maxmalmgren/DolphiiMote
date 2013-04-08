@@ -14,8 +14,10 @@
 
 // You should have received a copy of the GNU General Public License
 // along with DolphiiMote.  If not, see <http://www.gnu.org/licenses/>.
-
-#include "dolphiimote.h"
+extern "C"
+{
+  #include "dolphiimote.h"
+}
 #include "dolphiimote_host.h"
 
 dolphiimote::dolphiimote_host host;
@@ -32,7 +34,7 @@ void dolphiimote_brief_rumble(unsigned int  wiimote_number)
 
 void dolphiimote_enable_capabilities(unsigned int wiimote_number, dolphiimote_capabilities capabilities)
 {
-  host.enable_capabilities(wiimote_number, (dolphiimote::wiimote_capabilities)capabilities);
+  host.enable_capabilities(wiimote_number, (dolphiimote::wiimote_capabilities::type)capabilities);
 }
 
 void dolphiimote_determine_capabilities(unsigned int wiimote_number)

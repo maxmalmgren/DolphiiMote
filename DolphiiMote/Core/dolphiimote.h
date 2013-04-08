@@ -18,17 +18,16 @@
 #ifndef _DOLPHIIMOTE_H
 #define _DOLPHIIMOTE_H
 
-#include "../Dolphin/Wiimote.h"
-#include "../Dolphin/WiimoteReal.h"
+#include <stdint.h>
 
-typedef u16 dolphiimote_button_state;
+typedef uint16_t dolphiimote_button_state;
 
 /*
   'dolphiimote_capabilities' is a flag containing one or more of the following:
 
-  MotionPlus = 2
-  Extension = 4
-  IR = 8
+  MotionPlus = dolphiimote_CAPABILITIES_MOTION_PLUS
+  Extension = dolphiimote_CAPABILITIES_EXTENSION
+  IR = dolphiimote_CAPABILITIES_IR
 */
 typedef uint16_t dolphiimote_capabilities;
 
@@ -46,51 +45,52 @@ typedef uint16_t dolphiimote_capabilities;
  (wiimote back) +Y  -Z (wiimote bottom)
 
 */
-struct dolphiimote_acceleration
+typedef struct dolphiimote_acceleration
 {
   unsigned char x, y, z;
-};
+} dolphiimote_acceleration;
 
-struct dolphiimote_motionplus
+typedef struct dolphiimote_motionplus
 {
-  u16 yaw_down_speed;
-  u16 roll_left_speed;
-  u16 pitch_left_speed;
+  uint16_t yaw_down_speed;
+  uint16_t roll_left_speed;
+  uint16_t pitch_left_speed;
 
-  u8 slow_modes; //Yaw = 0x1, Roll = 0x2, Pitch = 0x4.
-  u8 extension_connected;
-};
+  uint8_t slow_modes; //Yaw = 0x1, Roll = 0x2, Pitch = 0x4.
+  uint8_t extension_connected;
+} dolphiimote_motionplus;
 
-struct dolphiimote_wiimote_data
+typedef struct dolphiimote_wiimote_data
 {  
   dolphiimote_button_state button_state;
 
   unsigned int valid_data_flags;
   struct dolphiimote_acceleration acceleration;
   struct dolphiimote_motionplus motionplus;
-};
+} dolphiimote_wiimote_data;
 
-struct dolphiimote_capability_status
+typedef struct dolphiimote_capability_status
 {  
   uint64_t extension_id;
   uint32_t extension_type;
 
   dolphiimote_capabilities available_capabilities;
   dolphiimote_capabilities enabled_capabilities;
-};
+} dolphiimote_capability_status;
 
 typedef void (*update_callback_t)(unsigned int wiimote_number, struct dolphiimote_wiimote_data *data_struct, void *userdata);
 typedef void (*connection_callback_t)(unsigned int wiimote_number, int connected);
 typedef void (*capabilities_callback_t)(unsigned int wiimote_number, struct dolphiimote_capability_status *capabilities, void *userdata);
 
-struct dolphiimote_callbacks
+typedef struct dolphiimote_callbacks
 {  
   update_callback_t data_received;
   connection_callback_t connection_changed;
   capabilities_callback_t capabilities_changed;
 
   void *userdata;
-};
+} dolphiimote_callbacks;
+
 
 int dolphiimote_init(dolphiimote_callbacks on_update, void *callback_userdata);
 void dolphiimote_update();
@@ -118,7 +118,6 @@ void dolphiimote_determine_capabilities(unsigned int wiimote_number);
   Enable different features of the wiimote.
 */
 void dolphiimote_enable_capabilities(unsigned int wiimote_number, dolphiimote_capabilities capabilities);
-
 
 /*
   These are the button states, as they are saved in dolphiimote_button_state
@@ -150,5 +149,11 @@ void dolphiimote_enable_capabilities(unsigned int wiimote_number, dolphiimote_ca
 #define dolphiimote_EXTENSION_CLASSIC_CONTROLLER_PRO 0x0003
 #define dolphiimote_EXTENSION_GUITAR_HERO_GUITAR 0x0004
 #define dolphiimote_EXTENSION_GUITAR_HERO_WORLD_TOUR_DRUMS 0x0005
+
+#define dolphiimote_CAPABILITIES_MOTION_PLUS 0x0002
+#define dolphiimote_CAPABILITIES_EXTENSION 0x0004
+#define dolphiimote_CAPABILITIES_IR 0x0008
+
+#define dolphiimote_MAX_WIIMOTES 4
 
 #endif

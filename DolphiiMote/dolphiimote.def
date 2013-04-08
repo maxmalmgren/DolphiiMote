@@ -5,3 +5,4 @@ EXPORTS
 	dolphiimote_set_reporting_mode
 	dolphiimote_brief_rumble
 	dolphiimote_determine_capabilities
+	dolphiimote_enable_capabilities

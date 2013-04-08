@@ -56,7 +56,7 @@ namespace dolphiimote {
     };
 
     data_sender &sender;
-    std::array<wiimote_read_state, MAX_WIIMOTES> read_states;
+    std::array<wiimote_read_state, dolphiimote_MAX_WIIMOTES> read_states;
   };
 }
 

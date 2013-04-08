@@ -19,7 +19,7 @@
 #include "serialization.h"
 
 namespace dolphiimote {
-    std::map<wiimote_capabilities, std::function<void(checked_array<const u8>, dolphiimote_wiimote_data&)>> extension_retrievers;
+    std::map<wiimote_extensions::type, std::function<void(checked_array<const u8>, dolphiimote_wiimote_data&)>> extension_retrievers;
     std::vector<std::pair<u16, std::function<void(u8, checked_array<const u8>, dolphiimote_wiimote_data&)>>> standard_retrievers;
     std::map<u16, range> reporting_mode_extension_data_offset;
     bool init;
@@ -30,7 +30,7 @@ namespace dolphiimote {
       standard_retrievers.push_back(std::make_pair(2 | 8 | 32 | 128, serialization::retrieve_acceleration_data));
       standard_retrievers.push_back(std::make_pair(8 | 64 | 128, serialization::retrieve_infrared_camera_data)); 
 
-      extension_retrievers[MotionPlus] = serialization::retrieve_motion_plus;
+      extension_retrievers[wiimote_extensions::MotionPlus] = serialization::retrieve_motion_plus;
     }
 
     void setup_extension_offsets()
@@ -72,7 +72,7 @@ namespace dolphiimote {
 
     void retrieve_extension_data(int wiimote_number, checked_array<const u8> data, dolphiimote_wiimote_data &output)
     {
-      wiimote_capabilities enabled_extension = wiimote_capabilities::MotionPlus;
+      wiimote_extensions::type enabled_extension = wiimote_extensions::MotionPlus;
 
       if(extension_retrievers.find(enabled_extension) != extension_retrievers.end())
         extension_retrievers[enabled_extension](data, output);

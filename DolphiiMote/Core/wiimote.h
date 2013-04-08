@@ -23,22 +23,25 @@
 #include <chrono>
 #include <array>
 #include "Util/collections.h"
+#include "Util/enum.h"
 
 namespace dolphiimote
 {
   typedef std::chrono::time_point<std::chrono::system_clock> steady_time_point;
-  enum wiimote_capabilities { Unknown = 1, MotionPlus = 2, Extension = 4, IR = 8 };
-  enum wiimote_extensions { None = 0, Nunchuck = 1, ClassicController = 2, ClassicControllerPro = 3, GHGuitar = 4, GHWorldTourDrums = 5 };
+  
+  class wiimote_capabilities
+  {    
+  public:
+    typedef enumeration<uint16_t> type;
+    static const type None, MotionPlus, Extension, IR;
+  };
 
-  inline wiimote_capabilities operator|(wiimote_capabilities a, wiimote_capabilities b)
-  {
-    return static_cast<wiimote_capabilities>(static_cast<int>(a) | static_cast<int>(b));
-  }
-
-  inline void operator|=(wiimote_capabilities &a, wiimote_capabilities b)
-  {
-    a = static_cast<wiimote_capabilities>(static_cast<int>(a) | static_cast<int>(b));
-  }
+  class wiimote_extensions
+  { 
+  public:
+    typedef enumeration<uint32_t, 0> type;
+    static const type None, Nunchuck, ClassicController, ClassicControllerPro, GHGuitar, GHWorldTourDrums, MotionPlus;
+  };
 
   class wiimote_data_handler
   {
@@ -82,9 +85,9 @@ namespace dolphiimote
     }
 
     u64 extension_id;
-    wiimote_capabilities available_capabilities;
-    wiimote_capabilities enabled_capabilities;
-    wiimote_extensions extension_type;
+    wiimote_capabilities::type available_capabilities;
+    wiimote_capabilities::type enabled_capabilities;
+    wiimote_extensions::type extension_type;
     u8 reporting_mode;
     u8 led_state;
     bool rumble_state;  

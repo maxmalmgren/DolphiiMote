@@ -26,9 +26,9 @@
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120_CTP_Nov2012</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
     <CLRSupport>false</CLRSupport>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
@@ -55,6 +55,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -88,6 +89,7 @@
     <ClCompile Include="Core\dolphiimote_host.cpp" />
     <ClCompile Include="Core\rumbler.cpp" />
     <ClCompile Include="Core\serialization.cpp" />
+    <ClCompile Include="Core\wiimote.cpp" />
     <ClCompile Include="Core\wiimote_reader.cpp" />
     <ClCompile Include="Dolphin\IOWin.cpp" />
     <ClCompile Include="Dolphin\StringUtil.cpp" />
@@ -104,6 +106,7 @@
     <ClInclude Include="Core\rumbler.h" />
     <ClInclude Include="Core\serialization.h" />
     <ClInclude Include="Core\Util\collections.h" />
+    <ClInclude Include="Core\Util\enum.h" />
     <ClInclude Include="Core\wiimote.h" />
     <ClInclude Include="Core\wiimote_reader.h" />
     <ClInclude Include="Dolphin\Atomic.h" />

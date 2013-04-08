@@ -33,7 +33,7 @@ namespace dolphiimote {
 
     void wiimote_reader::operator()()
     {
-      for(size_t i = 0; i < MAX_WIIMOTES; i++)
+      for(size_t i = 0; i < dolphiimote_MAX_WIIMOTES; i++)
       {
         auto& mote = read_states[i];
 

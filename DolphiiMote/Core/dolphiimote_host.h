@@ -36,7 +36,7 @@ namespace dolphiimote {
     int init(dolphiimote_callbacks callbacks);
     void do_rumble(int wiimote_number);    
 
-    void enable_capabilities(int wiimote_number, wiimote_capabilities capability);
+    void enable_capabilities(int wiimote_number, wiimote_capabilities::type capability);
     void determine_capabilities(int wiimote_number);
     void request_reporting_mode(int wiimote_number, u8 mode);
     virtual void data_received(int wiimote_number, const u16 channel, const void* const data, const u32 size);

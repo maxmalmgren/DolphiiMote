@@ -64,7 +64,7 @@ namespace dolphiimote {
     discoverer.determine_capabilities(wiimote_number);
   }
 
-  void dolphiimote_host::enable_capabilities(int wiimote_number, wiimote_capabilities capability)
+  void dolphiimote_host::enable_capabilities(int wiimote_number, wiimote_capabilities::type capability)
   {
     discoverer.enable(wiimote_number, capability);
   }

@@ -36,7 +36,7 @@ namespace dolphiimote { namespace serialization {
       return 3;
     }
 
-      void retrieve_motion_plus(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output)
+  void retrieve_motion_plus(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output)
   {
     u8 speed_mask = ~0x03;
 
