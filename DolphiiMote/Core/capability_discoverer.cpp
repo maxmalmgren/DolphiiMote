@@ -27,17 +27,27 @@ namespace dolphiimote {
       handle_status_report(wiimote_number, data);
   }
 
-  void extension_controller_changed(bool extension_controller_connected, wiimote& mote, bool& changed)
+  bool can_unobstrusively_enable_extension(const wiimote& mote)
   {
+    return !is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus);
+  }
+
+  void capability_discoverer::handle_extension_controller_changed(bool extension_controller_connected, int wiimote, bool& changed)
+  {
+    auto& mote = wiimote_states[wiimote];
+
     if(extension_controller_connected && !is_set(mote.available_capabilities, wiimote_capabilities::Extension))
     {
       mote.available_capabilities |= wiimote_capabilities::Extension;
+      if(can_unobstrusively_enable_extension(mote))
+        init_and_identify_extension_controller(wiimote);
       changed = true;
     }
 
     if(!extension_controller_connected && is_set(mote.available_capabilities, wiimote_capabilities::Extension))
     {
       mote.available_capabilities &= ~wiimote_capabilities::Extension;
+      mote.set_extension_disabled();
       changed = true;
     }
   }
@@ -46,8 +56,6 @@ namespace dolphiimote {
   {
     if(data.size() < 5)
       return;
-
-    auto& mote = wiimote_states[wiimote_number];
 
     u8 flags = data[4];
 
@@ -63,7 +71,7 @@ namespace dolphiimote {
 
     bool capabilities_changed = false;
 
-    extension_controller_changed(flags & 0x02, mote, capabilities_changed);
+    handle_extension_controller_changed(flags & 0x02, wiimote_number, capabilities_changed);
 
     if(capabilities_changed)
       dispatch_capabilities_changed(wiimote_number, callbacks);
@@ -116,6 +124,8 @@ namespace dolphiimote {
 
     if(id_to_extension_type().find(id) != id_to_extension_type().end())
       wiimote_states[wiimote_number].extension_type = id_to_extension_type()[id];
+    else if (id == 0xFFFFFFFFFFFF)
+      init_and_identify_extension_controller(wiimote_number); //Retry, because the controller extension was likely just plugged in (status report).
   }
 
   u64 read_extension_id(checked_array<const u8> data)
@@ -195,11 +205,10 @@ namespace dolphiimote {
   {
     sender.write_register(wiimote_number, 0xA600FE, 0x4, 1);
 
-    wiimote_states[wiimote_number].enabled_capabilities |= wiimote_capabilities::MotionPlus;
-    wiimote_states[wiimote_number].enabled_capabilities &= ~wiimote_capabilities::Extension;
+    auto& mote = wiimote_states[wiimote_number];
 
-    wiimote_states[wiimote_number].extension_type = 0;
-    wiimote_states[wiimote_number].extension_id = 0;
+    mote.enabled_capabilities |= wiimote_capabilities::MotionPlus;
+    mote.set_extension_disabled();
 
     dispatch_capabilities_changed(wiimote_number, callbacks);
   }

@@ -84,6 +84,13 @@ namespace dolphiimote
       return rumble_state;
     }
 
+    void set_extension_disabled()
+    {
+      enabled_capabilities &= ~wiimote_capabilities::Extension;
+      extension_id = 0;
+      extension_type = 0;
+    }
+
     u64 extension_id;
     wiimote_capabilities::type available_capabilities;
     wiimote_capabilities::type enabled_capabilities;
