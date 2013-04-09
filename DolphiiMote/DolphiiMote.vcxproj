@@ -89,6 +89,7 @@
     <ClCompile Include="Core\dolphiimote_host.cpp" />
     <ClCompile Include="Core\rumbler.cpp" />
     <ClCompile Include="Core\serialization.cpp" />
+    <ClCompile Include="Core\Util\log.cpp" />
     <ClCompile Include="Core\wiimote.cpp" />
     <ClCompile Include="Core\wiimote_reader.cpp" />
     <ClCompile Include="Dolphin\IOWin.cpp" />
@@ -107,6 +108,8 @@
     <ClInclude Include="Core\serialization.h" />
     <ClInclude Include="Core\Util\collections.h" />
     <ClInclude Include="Core\Util\enum.h" />
+    <ClInclude Include="Core\Util\log.h" />
+    <ClInclude Include="Core\Util\typesafe.h" />
     <ClInclude Include="Core\wiimote.h" />
     <ClInclude Include="Core\wiimote_reader.h" />
     <ClInclude Include="Dolphin\Atomic.h" />

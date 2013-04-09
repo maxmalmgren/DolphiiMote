@@ -204,4 +204,4 @@ namespace dolphiimote
     }
   };
 }
-#endif DOLPHIIMOTE_COLLECTIONS_H
+#endif

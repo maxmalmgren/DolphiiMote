@@ -24,6 +24,8 @@
 #define	INFO_LEVEL    4  // General information.
 #define	DEBUG_LEVEL   5  // Detailed debugging - might make things slow.
 
+#include "../Core/Util/log.h"
+
 namespace LogTypes
 {
 
@@ -94,7 +96,7 @@ inline void GenericLog(LOGTYPES_LEVELS level, LOGTYPES_TYPE type,
 {
 	va_list args;
 	va_start(args, fmt);
-  fprintf(stdout, fmt, args);
+  dolphiimote::log(dolphiimote::Info, fmt, args);
 	va_end(args);
 }
 

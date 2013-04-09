@@ -93,12 +93,14 @@ typedef struct dolphiimote_capability_status
 typedef void (*update_callback_t)(unsigned int wiimote_number, struct dolphiimote_wiimote_data *data_struct, void *userdata);
 typedef void (*connection_callback_t)(unsigned int wiimote_number, int connected);
 typedef void (*capabilities_callback_t)(unsigned int wiimote_number, struct dolphiimote_capability_status *capabilities, void *userdata);
+typedef void (*log_callback_t)(const char* str, int size);
 
 typedef struct dolphiimote_callbacks
 {  
   update_callback_t data_received;
   connection_callback_t connection_changed;
   capabilities_callback_t capabilities_changed;
+  log_callback_t log_received;
 
   void *userdata;
 } dolphiimote_callbacks;

@@ -16,6 +16,7 @@
 // along with DolphiiMote.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "dolphiimote_host.h"
+#include "Util/log.h"
 
 namespace dolphiimote {
   dolphiimote_host::dolphiimote_host(dolphiimote_callbacks callbacks) : callbacks(callbacks),
@@ -31,6 +32,12 @@ namespace dolphiimote {
 
   int dolphiimote_host::init()
   {
+    log_keeper::instance().set_output([this](std::string &output)
+    {
+      if(callbacks.log_received)
+        callbacks.log_received(output.c_str(), output.size());
+    });
+
     WiimoteReal::listeners.add(this);
     WiimoteReal::LoadSettings();
     WiimoteReal::Initialize();

@@ -142,6 +142,11 @@ void on_capabilities_changed(unsigned int wiimote, dolphiimote_capability_status
   dolphiimote_set_reporting_mode(wiimote, 0x35);  
 }
 
+void on_log_received(const char* str, int size)
+{
+  printf_s(str);
+}
+
 int main()
 {
   dolphiimote_callbacks callbacks = { 0 };
@@ -150,6 +155,7 @@ int main()
 
   callbacks.data_received = on_data_received;
   callbacks.capabilities_changed = on_capabilities_changed;
+  callbacks.log_received = on_log_received;
 
   wiimote_flags = dolphiimote_init(callbacks, NULL);
 
