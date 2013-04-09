@@ -157,7 +157,7 @@ int main()
   callbacks.capabilities_changed = on_capabilities_changed;
   callbacks.log_received = on_log_received;
 
-  dolphiimote_log_level(dolphiimote_LOG_LEVEL_WARNING);
+  dolphiimote_log_level(dolphiimote_LOG_LEVEL_DEBUG);
 
   wiimote_flags = dolphiimote_init(callbacks, NULL);  
 

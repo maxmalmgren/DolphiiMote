@@ -104,6 +104,7 @@
     <ClInclude Include="Core\data_sender.h" />
     <ClInclude Include="Core\dolphiimote.h" />
     <ClInclude Include="Core\dolphiimote_host.h" />
+    <ClInclude Include="Core\logging_capability_discoverer.h" />
     <ClInclude Include="Core\rumbler.h" />
     <ClInclude Include="Core\serialization.h" />
     <ClInclude Include="Core\Util\collections.h" />

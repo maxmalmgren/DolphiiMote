@@ -32,22 +32,36 @@ namespace dolphiimote {
     return !is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus);
   }
 
+  void capability_discoverer::handle_extension_connected(int wiimote)
+  {
+    auto& mote = wiimote_states[wiimote];
+
+    mote.available_capabilities |= wiimote_capabilities::Extension;
+    if(can_unobstrusively_enable_extension(mote))
+      init_and_identify_extension_controller(wiimote);
+  }
+
+  void capability_discoverer::handle_extension_disconnected(int wiimote)
+  {
+    auto& mote = wiimote_states[wiimote];
+
+    mote.available_capabilities &= ~wiimote_capabilities::Extension;
+    mote.set_extension_disabled();
+  }
+
   void capability_discoverer::handle_extension_controller_changed(bool extension_controller_connected, int wiimote, bool& changed)
   {
     auto& mote = wiimote_states[wiimote];
 
     if(extension_controller_connected && !is_set(mote.available_capabilities, wiimote_capabilities::Extension))
     {
-      mote.available_capabilities |= wiimote_capabilities::Extension;
-      if(can_unobstrusively_enable_extension(mote))
-        init_and_identify_extension_controller(wiimote);
+      handle_extension_connected(wiimote);
       changed = true;
     }
 
     if(!extension_controller_connected && is_set(mote.available_capabilities, wiimote_capabilities::Extension))
     {
-      mote.available_capabilities &= ~wiimote_capabilities::Extension;
-      mote.set_extension_disabled();
+      handle_extension_disconnected(wiimote);
       changed = true;
     }
   }
@@ -75,11 +89,6 @@ namespace dolphiimote {
 
     if(capabilities_changed)
       dispatch_capabilities_changed(wiimote_number, callbacks);
-  }
-
-  u8 read_error_bit(checked_array<const u8> data)
-  {
-    return data[4] & 0x0F;
   }
 
   void fill_capabilities(dolphiimote_capability_status &status, wiimote &mote)
@@ -128,7 +137,7 @@ namespace dolphiimote {
       init_and_identify_extension_controller(wiimote_number); //Retry, because the controller extension was likely just plugged in (status report).
   }
 
-  u64 read_extension_id(checked_array<const u8> data)
+  u64 capability_discoverer::read_extension_id(checked_array<const u8> data)
   {
     u64 id = 0;
 
@@ -140,7 +149,7 @@ namespace dolphiimote {
 
   void capability_discoverer::handle_extension_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
   {
-    u8 error_bit = read_error_bit(data);
+    u8 error_bit = reader.read_error_bit(data);
 
     checked_array<const u8> extension_id = data.sub_array(7, 6);
 
@@ -161,7 +170,7 @@ namespace dolphiimote {
 
   void capability_discoverer::handle_motionplus_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
   {
-    u8 error_bit = read_error_bit(data);
+    u8 error_bit = reader.read_error_bit(data);
 
     if(error_bit == 0)
     {

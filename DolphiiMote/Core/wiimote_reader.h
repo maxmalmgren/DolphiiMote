@@ -31,6 +31,7 @@ namespace dolphiimote {
 
     virtual void data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data);
     void operator()();
+    u8 read_error_bit(checked_array<const u8> data);
 
   private:
     struct read_request

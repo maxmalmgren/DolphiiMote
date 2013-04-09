@@ -34,24 +34,27 @@ namespace dolphiimote
 
     virtual void data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data);
 
-    void determine_capabilities(int wiimote_number);
-    void send_status_request(int wiimote_number);
-    void enable(int wiimote_number, wiimote_capabilities::type capabilities_to_enable);
-    
+    virtual void determine_capabilities(int wiimote_number);
+    virtual void send_status_request(int wiimote_number);
+    virtual void enable(int wiimote_number, wiimote_capabilities::type capabilities_to_enable);
 
-  private:
-    void handle_status_report(int wiimote_number, checked_array<const u8> data);
-    void update_extension_type_from_id(int wiimote_number);
-    void handle_extension_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
-    void handle_motionplus_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
-    void init_and_identify_extension_controller(int wiimote_number);
-    void send_extension_id_read_message(int wiimote_number);
-    void dispatch_capabilities_changed(int wiimote, dolphiimote_callbacks callbacks);
-    void handle_motion_plus_and_extension_enabling(int wiimote_number, wiimote_capabilities::type capabilities_to_enable);
-    void handle_extension_controller_changed(bool extension_controller_connected, int wiimote, bool& changed);
+  protected:
+    virtual void handle_status_report(int wiimote_number, checked_array<const u8> data);
+    virtual void update_extension_type_from_id(int wiimote_number);
+    virtual void handle_extension_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
+    virtual void handle_motionplus_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
+    virtual void init_and_identify_extension_controller(int wiimote_number);
+    virtual void send_extension_id_read_message(int wiimote_number);
+    virtual void dispatch_capabilities_changed(int wiimote, dolphiimote_callbacks callbacks);
+    virtual void handle_motion_plus_and_extension_enabling(int wiimote_number, wiimote_capabilities::type capabilities_to_enable);
+    virtual void handle_extension_controller_changed(bool extension_controller_connected, int wiimote, bool& changed);
 
-    void enable_motion_plus_no_passthrough(int wiimote_number);
-    void enable_only_extension(int wiimote);
+    virtual void enable_motion_plus_no_passthrough(int wiimote_number);
+    virtual void enable_only_extension(int wiimote);
+    virtual void handle_extension_connected(int wiimote);
+    virtual void handle_extension_disconnected(int wiimote);
+
+    u64 capability_discoverer::read_extension_id(checked_array<const u8> data);
 
     std::map<int, wiimote> &wiimote_states;
     dolphiimote_callbacks callbacks;
@@ -59,4 +62,4 @@ namespace dolphiimote
     wiimote_reader &reader;
   };
 }
-#endif DOLPHIIMOTE_CAPABILITY_DISCOVERER_H
+#endif

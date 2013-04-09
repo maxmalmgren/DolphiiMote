@@ -23,10 +23,11 @@
 #include "Util/collections.h"
 #include "wiimote.h"
 #include "data_reporter.h"
-#include "capability_discoverer.h"
+#include "logging_capability_discoverer.h"
 #include "rumbler.h"
 #include "data_sender.h"
 #include "wiimote_reader.h"
+
 namespace dolphiimote {
   class dolphiimote_host : public WiimoteReal::wiimote_listener
   {
@@ -52,7 +53,7 @@ namespace dolphiimote {
     data_sender sender;
     data_reporter reporter;
     rumbler rumble;
-    capability_discoverer discoverer;
+    logging_capability_discoverer discoverer;
     wiimote_reader reader;
     std::vector<wiimote_data_handler*> handlers;
     std::vector<wiimote_data_handler*> init_handlers();

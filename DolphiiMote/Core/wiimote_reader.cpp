@@ -31,6 +31,11 @@ namespace dolphiimote {
       data[7] = size & 0xFF;
     }
 
+    u8 wiimote_reader::read_error_bit(checked_array<const u8> data)
+    {
+      return data[4] & 0x0F;
+    }
+
     void wiimote_reader::operator()()
     {
       for(size_t i = 0; i < dolphiimote_MAX_WIIMOTES; i++)
