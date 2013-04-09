@@ -170,9 +170,10 @@ void dolphiimote_log_level(uint8_t log_level);
 #define dolphiimote_EXTENSION_NONE 0x0000
 #define dolphiimote_EXTENSION_NUNCHUCK 0x0001
 #define dolphiimote_EXTENSION_CLASSIC_CONTROLLER 0x0002
-#define dolphiimote_EXTENSION_CLASSIC_CONTROLLER_PRO 0x0003
-#define dolphiimote_EXTENSION_GUITAR_HERO_GUITAR 0x0004
-#define dolphiimote_EXTENSION_GUITAR_HERO_WORLD_TOUR_DRUMS 0x0005
+#define dolphiimote_EXTENSION_CLASSIC_CONTROLLER_PRO 0x0004
+#define dolphiimote_EXTENSION_GUITAR_HERO_GUITAR 0x0008
+#define dolphiimote_EXTENSION_GUITAR_HERO_WORLD_TOUR_DRUMS 0x0010
+#define dolphiimote_EXTENSION_MOTION_PLUS 0x0020
 
 #define dolphiimote_CAPABILITIES_MOTION_PLUS 0x0002
 #define dolphiimote_CAPABILITIES_EXTENSION 0x0004

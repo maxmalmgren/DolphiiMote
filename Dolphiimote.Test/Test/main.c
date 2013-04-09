@@ -77,7 +77,7 @@ void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_da
   {
     int c = data->nunchuck.buttons & dolphiimote_NUNCHUCK_BUTTON_C;
     int z = data->nunchuck.buttons & dolphiimote_NUNCHUCK_BUTTON_Z;
-    printf("Nunchuck: C: %i, Z: %i, Acc: %02X%02X%02X\n Stick X: %i, Y: %i\t", c, z, data->nunchuck.x, data->nunchuck.y, data->nunchuck.z, data->nunchuck.stick_x, data->nunchuck.stick_y);
+    printf("Nunchuck: C: %i, Z: %i, Acc: %02X%02X%02X Stick X: %i, Y: %i\t", c, z, data->nunchuck.x, data->nunchuck.y, data->nunchuck.z, data->nunchuck.stick_x, data->nunchuck.stick_y);
   }
 
   printf("\n");

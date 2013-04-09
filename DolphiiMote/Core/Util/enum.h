@@ -69,6 +69,12 @@ private:
   }
 
   template <typename T, T def_value>
+  inline bool operator==(enumeration<T, def_value> a, enumeration<T, def_value> b)
+  {
+    return a.val() == b.val();
+  }
+
+  template <typename T, T def_value>
   inline enumeration<T, def_value> operator|(enumeration<T, def_value> a, enumeration<T, def_value> b)
   {
     return a.val() | b.val();

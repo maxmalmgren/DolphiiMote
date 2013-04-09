@@ -19,13 +19,13 @@
 
 namespace dolphiimote
 {
-  const wiimote_extensions::type wiimote_extensions::None = 0;
-  const wiimote_extensions::type wiimote_extensions::Nunchuck = 1;
-  const wiimote_extensions::type wiimote_extensions::ClassicController = 2;
-  const wiimote_extensions::type wiimote_extensions::ClassicControllerPro = 3;
-  const wiimote_extensions::type wiimote_extensions::GHGuitar = 4;
-  const wiimote_extensions::type wiimote_extensions::GHWorldTourDrums = 5;
-  const wiimote_extensions::type wiimote_extensions::MotionPlus = 6;
+  const wiimote_extensions::type wiimote_extensions::None = 0x00;
+  const wiimote_extensions::type wiimote_extensions::Nunchuck = 0x01;
+  const wiimote_extensions::type wiimote_extensions::ClassicController = 0x02;
+  const wiimote_extensions::type wiimote_extensions::ClassicControllerPro = 0x04;
+  const wiimote_extensions::type wiimote_extensions::GHGuitar = 0x08;
+  const wiimote_extensions::type wiimote_extensions::GHWorldTourDrums = 0x10;
+  const wiimote_extensions::type wiimote_extensions::MotionPlus = 0x20;
 
   const wiimote_capabilities::type wiimote_capabilities::None = 0;
   const wiimote_capabilities::type wiimote_capabilities::MotionPlus = 0x2;
