@@ -134,6 +134,12 @@ void dolphiimote_determine_capabilities(unsigned int wiimote_number);
 void dolphiimote_enable_capabilities(unsigned int wiimote_number, dolphiimote_capabilities capabilities);
 
 /*
+  Sets the level of the log calls that will be forwarded to the callback sent into dolphiimote_init.
+  Log calls with level at or above the given level will be forwarded.
+*/
+void dolphiimote_log_level(uint8_t log_level);
+
+/*
   These are the button states, as they are saved in dolphiimote_button_state
   and how they are sent by a Wiimote - but a Wiimote sends it in two
   consecutive bytes.
@@ -171,6 +177,11 @@ void dolphiimote_enable_capabilities(unsigned int wiimote_number, dolphiimote_ca
 #define dolphiimote_CAPABILITIES_MOTION_PLUS 0x0002
 #define dolphiimote_CAPABILITIES_EXTENSION 0x0004
 #define dolphiimote_CAPABILITIES_IR 0x0008
+
+#define dolphiimote_LOG_LEVEL_DEBUG 0
+#define dolphiimote_LOG_LEVEL_INFO 1
+#define dolphiimote_LOG_LEVEL_WARNING 2
+#define dolphiimote_LOG_LEVEL_ERROR 3
 
 #define dolphiimote_MAX_WIIMOTES 4
 

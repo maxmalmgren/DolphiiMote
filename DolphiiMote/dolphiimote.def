@@ -6,3 +6,4 @@ EXPORTS
 	dolphiimote_brief_rumble
 	dolphiimote_determine_capabilities
 	dolphiimote_enable_capabilities
+	dolphiimote_log_level

@@ -157,7 +157,9 @@ int main()
   callbacks.capabilities_changed = on_capabilities_changed;
   callbacks.log_received = on_log_received;
 
-  wiimote_flags = dolphiimote_init(callbacks, NULL);
+  dolphiimote_log_level(dolphiimote_LOG_LEVEL_WARNING);
+
+  wiimote_flags = dolphiimote_init(callbacks, NULL);  
 
   for(i = 0; i < dolphiimote_MAX_WIIMOTES; i++, wiimote_flags >>= 1)
   {

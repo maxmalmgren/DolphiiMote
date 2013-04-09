@@ -48,6 +48,11 @@ void dolphiimote_set_reporting_mode(unsigned int wiimote_number, uint8_t mode)
   host->request_reporting_mode(wiimote_number, mode);
 }
 
+void dolphiimote_log_level(uint8_t level)
+{
+  dolphiimote::log_keeper::instance().set_level(level);
+}
+
 void dolphiimote_update()
 {
   for(int i = 0; i < 4; i++)

@@ -42,6 +42,11 @@ namespace dolphiimote
   {
     return _instance;
   }
+  
+  void log_keeper::set_level(uint8_t level)
+  {
+    this->level = level;
+  }
 
   void log_keeper::set_output(std::function<void(std::string&)> callback)
   {
@@ -58,13 +63,16 @@ namespace dolphiimote
 
   void log_keeper::log(const log_level &level, const char* fmt, va_list args)
   {
+    if(level->first < this->level)
+      return;
+
     char buffer[500];
 
     char* index = buffer;
 
-    std::memcpy(index, level->c_str(), level->size());
+    std::memcpy(index, level->second.c_str(), level->second.size());
 
-    index += level->size();
+    index += level->second.size();
 
     *index++ = '\t';
 
