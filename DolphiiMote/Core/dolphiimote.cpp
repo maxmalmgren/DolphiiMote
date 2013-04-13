@@ -20,11 +20,12 @@ extern "C"
 }
 #include "dolphiimote_host.h"
 
-std::unique_ptr<dolphiimote::dolphiimote_host> host;
+std::shared_ptr<dolphiimote::dolphiimote_host> host;
 
 int dolphiimote_init(dolphiimote_callbacks _callback, void *userdata)
 {
-  host = std::unique_ptr<dolphiimote::dolphiimote_host>(new dolphiimote::dolphiimote_host(_callback));
+  host = std::shared_ptr<dolphiimote::dolphiimote_host>(new dolphiimote::dolphiimote_host(_callback));
+  WiimoteReal::listeners.add(std::weak_ptr<WiimoteReal::wiimote_listener>(host));
   return host->number_of_wiimotes();
 }
 

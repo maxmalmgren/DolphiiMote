@@ -27,6 +27,7 @@
 #include <thread>
 #include "FifoQueue.h"
 #include "Timer.h"
+#include <memory>
 #include "dolphiimote_glue.h"
 
 #include "Wiimote.h"
@@ -152,7 +153,7 @@ private:
 };
 
 extern std::recursive_mutex g_refresh_lock;
-extern listener_collection<wiimote_listener*> listeners;
+extern listener_collection<std::weak_ptr<wiimote_listener>> listeners;
 extern WiimoteScanner g_wiimote_scanner;
 extern Wiimote *g_wiimotes[4];
 

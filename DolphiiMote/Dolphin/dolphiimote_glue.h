@@ -54,7 +54,7 @@ template <typename T>
   };
 
   template <class T>
-  class listener_collection<T*>
+  class listener_collection<std::weak_ptr<T>>
   {
   public:
     template <typename TFunc, typename TK>
@@ -63,9 +63,14 @@ template <typename T>
       std::function<void(T*, TK)> resolved_func = std::mem_fn(func);
       std::lock_guard<std::recursive_mutex> lock(callback_lock);
 
-      for(T* listener : listeners)
-        resolved_func(listener, arg1);
-    }
+	  remove_expired_listeners();
+
+	  for(std::weak_ptr<T> &listener : listeners)
+	  {
+		auto& locked = listener.lock();
+		resolved_func(locked.get(), arg1);
+	  }
+	}
 
     template <typename TFunc, typename TK, typename TX>
     void notify(TFunc func, TK arg1, TX arg2)
@@ -73,8 +78,13 @@ template <typename T>
       std::function<void(T*, TK, TX)> resolved_func = std::mem_fn(func);
       std::lock_guard<std::recursive_mutex> lock(callback_lock);
 
-      for(T* listener : listeners)
-        resolved_func(listener, arg1, arg2);
+	  remove_expired_listeners();
+
+      for(std::weak_ptr<T> &listener : listeners)
+	  {
+		auto& locked = listener.lock();
+		resolved_func(locked.get(), arg1, arg2);
+	  }
     }
 
     template <typename TFunc, typename TK, typename TX, typename TY, typename TZ>
@@ -83,18 +93,28 @@ template <typename T>
       std::function<void(T*, TK, TX, TY, TZ)> resolved_func = std::mem_fn(func);
       std::lock_guard<std::recursive_mutex> lock(callback_lock);
 
-      for(T* listener : listeners)
-        resolved_func(listener, arg1, arg2, arg3, arg4);
+	  remove_expired_listeners();
+
+      for(std::weak_ptr<T> &listener : listeners)
+	  {
+        auto& locked = listener.lock();
+        resolved_func(locked.get(), arg1, arg2, arg3, arg4);
+      }
     }
 
-    void add(T* listener)
+	void remove_expired_listeners()
+	{
+		listeners.erase(std::remove_if(listeners.begin(), listeners.end(), [](std::weak_ptr<T> &ptr) -> bool { return ptr.expired(); }), listeners.end());
+	}
+
+    void add(std::weak_ptr<T> listener)
     {
       std::lock_guard<std::recursive_mutex> lock(callback_lock);
       listeners.push_back(listener);
     }
 
   private:
-    std::vector<T*> listeners;
+    std::vector<std::weak_ptr<T>> listeners;
     std::recursive_mutex callback_lock;
   };
 

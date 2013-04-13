@@ -38,7 +38,6 @@ namespace dolphiimote {
         callbacks.log_received(output.c_str(), output.size());
     });
 
-    WiimoteReal::listeners.add(this);
     WiimoteReal::LoadSettings();
     WiimoteReal::Initialize();
     WiimoteReal::Refresh();

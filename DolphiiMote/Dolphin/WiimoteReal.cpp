@@ -45,7 +45,7 @@ Wiimote* g_wiimotes[MAX_WIIMOTES];
 
 WiimoteScanner g_wiimote_scanner;
 
-listener_collection<wiimote_listener*> listeners;
+listener_collection<std::weak_ptr<wiimote_listener>> listeners;
 
 u8 FoundWiimotesFlag()
 {
