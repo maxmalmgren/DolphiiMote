@@ -74,7 +74,7 @@ typedef struct dolphiimote_wiimote_data
 {  
   dolphiimote_button_state button_state;
 
-  unsigned int valid_data_flags;
+  uint32_t valid_data_flags;
 
   dolphiimote_acceleration acceleration;
   dolphiimote_motionplus motionplus;
@@ -90,10 +90,10 @@ typedef struct dolphiimote_capability_status
   dolphiimote_capabilities enabled_capabilities;
 } dolphiimote_capability_status;
 
-typedef void (*update_callback_t)(unsigned int wiimote_number, struct dolphiimote_wiimote_data *data_struct, void *userdata);
-typedef void (*connection_callback_t)(unsigned int wiimote_number, int connected);
-typedef void (*capabilities_callback_t)(unsigned int wiimote_number, struct dolphiimote_capability_status *capabilities, void *userdata);
-typedef void (*log_callback_t)(const char* str, int size);
+typedef void (*update_callback_t)(uint8_t wiimote_number, struct dolphiimote_wiimote_data *data_struct, void *userdata);
+typedef void (*connection_callback_t)(uint8_t wiimote_number, int connected);
+typedef void (*capabilities_callback_t)(uint8_t wiimote_number, struct dolphiimote_capability_status *capabilities, void *userdata);
+typedef void (*log_callback_t)(const char* str, uint32_t size);
 
 typedef struct dolphiimote_callbacks
 {  
@@ -116,22 +116,22 @@ void dolphiimote_update();
   Check http://wiibrew.org/wiki/Wiimote#Data_Reporting for more information
 
 */
-void dolphiimote_set_reporting_mode(unsigned int wiimote_number, uint8_t mode);
+void dolphiimote_set_reporting_mode(uint8_t wiimote_number, uint8_t mode);
 
 /*
   Rumble briefly - 200 ms
 */
-void dolphiimote_brief_rumble(unsigned int wiimote_number);
+void dolphiimote_brief_rumble(uint8_t wiimote_number);
 
 /*
   Start a check for the current capabilities of the wiimote.
 */
-void dolphiimote_determine_capabilities(unsigned int wiimote_number);
+void dolphiimote_determine_capabilities(uint8_t wiimote_number);
 
 /*
   Enable different features of the wiimote.
 */
-void dolphiimote_enable_capabilities(unsigned int wiimote_number, dolphiimote_capabilities capabilities);
+void dolphiimote_enable_capabilities(uint8_t wiimote_number, dolphiimote_capabilities capabilities);
 
 /*
   Sets the level of the log calls that will be forwarded to the callback sent into dolphiimote_init.

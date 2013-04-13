@@ -28,22 +28,22 @@ int dolphiimote_init(dolphiimote_callbacks _callback, void *userdata)
   return host->number_of_wiimotes();
 }
 
-void dolphiimote_brief_rumble(unsigned int  wiimote_number)
+void dolphiimote_brief_rumble(uint8_t  wiimote_number)
 {
   host->do_rumble(wiimote_number);
 }
 
-void dolphiimote_enable_capabilities(unsigned int wiimote_number, dolphiimote_capabilities capabilities)
+void dolphiimote_enable_capabilities(uint8_t wiimote_number, dolphiimote_capabilities capabilities)
 {
   host->enable_capabilities(wiimote_number, (dolphiimote::wiimote_capabilities::type)capabilities);
 }
 
-void dolphiimote_determine_capabilities(unsigned int wiimote_number)
+void dolphiimote_determine_capabilities(uint8_t wiimote_number)
 {
   host->determine_capabilities(wiimote_number);
 }
 
-void dolphiimote_set_reporting_mode(unsigned int wiimote_number, uint8_t mode)
+void dolphiimote_set_reporting_mode(uint8_t wiimote_number, uint8_t mode)
 {
   host->request_reporting_mode(wiimote_number, mode);
 }
