@@ -95,6 +95,15 @@ typedef void (*connection_callback_t)(uint8_t wiimote_number, int connected);
 typedef void (*capabilities_callback_t)(uint8_t wiimote_number, struct dolphiimote_capability_status *capabilities, void *userdata);
 typedef void (*log_callback_t)(const char* str, uint32_t size);
 
+/*
+  Callbacks specified to the dolphiimote init function will be called when certain events occur.
+
+  data_received: Will be called when a wiimote has reported some data, such as button state, acceleration, motion plus, extension data, IR etc.
+  connection_changed: Is called when a wiimote has been connected or disconnected.
+  log_received: Is called when a subsystem of dolphiimote or dolphin requests logging of a message.
+
+  WARNING: log_received must be thread synchronized by user code. It can potentially be called by Dolphiimote library code AND Dolphin internal threads.
+*/
 typedef struct dolphiimote_callbacks
 {  
   update_callback_t data_received;
@@ -106,7 +115,26 @@ typedef struct dolphiimote_callbacks
 } dolphiimote_callbacks;
 
 
-int dolphiimote_init(dolphiimote_callbacks on_update, void *callback_userdata);
+/*
+	Initializes the dolphiimote library. A number of callback function pointers are supplied,
+	each of which is called when their specific conditions have been met.
+
+  log_received is the only callback that is not always dispatched on the thread calling dolphiimote_update.
+  log_received can also be called by Dolphin internal threads.
+
+	Subsequent calls will reset the wiimote state to the same condition as the first call.
+*/
+int dolphiimote_init(dolphiimote_callbacks on_update);
+
+/*
+	Opposite of dolphiimote_init. After a call to this function, all internal functionality has been shut down.
+*/
+void dolphiimote_shutdown();
+
+/*
+	Performs a 'tick'. Sends any pending messages, and receives any incoming ones.
+	All callbacks except log_received will be dispatched on the thread calling this function.
+*/
 void dolphiimote_update();
 
 /*
@@ -114,7 +142,6 @@ void dolphiimote_update();
 
   0x30 - 0x3D
   Check http://wiibrew.org/wiki/Wiimote#Data_Reporting for more information
-
 */
 void dolphiimote_set_reporting_mode(uint8_t wiimote_number, uint8_t mode);
 
@@ -139,15 +166,19 @@ void dolphiimote_enable_capabilities(uint8_t wiimote_number, dolphiimote_capabil
 */
 void dolphiimote_log_level(uint8_t log_level);
 
+
 /*
-  These are the button states, as they are saved in dolphiimote_button_state
-  and how they are sent by a Wiimote - but a Wiimote sends it in two
-  consecutive bytes.
+  dolphiimote_*_VALID are used to distinguish which data is valid in a given dolphiimote_wiimote_data.
 */
 #define dolphiimote_ACCELERATION_VALID 0x0002
 #define dolphiimote_MOTIONPLUS_VALID 0x0004
 #define dolphiimote_NUNCHUCK_VALID 0x0008
 
+/*
+  These are the button states, as they are saved in dolphiimote_button_state
+  and how they are sent by a Wiimote - but a Wiimote sends it in two
+  consecutive bytes.
+*/
 #define dolphiimote_BUTTON_DPAD_LEFT 0x0100
 #define dolphiimote_BUTTON_DPAD_RIGHT 0x0200
 #define dolphiimote_BUTTON_DPAD_DOWN 0x0400
@@ -164,9 +195,16 @@ void dolphiimote_log_level(uint8_t log_level);
 
 #define dolphiimote_BUTTON_HOME 0x0080
 
+/*
+  dolphiimote_NUNCHUCK_BUTTON_* are the nunchuck buttons, as they are saved in dolphiimote_nunchuck.
+*/
 #define dolphiimote_NUNCHUCK_BUTTON_Z 0x01
 #define dolphiimote_NUNCHUCK_BUTTON_C 0x02
 
+/*
+  dolphiimote_EXTENSION_* are the available extension types. Use them with dolphiimote_capability_status.extension_type
+  to determine what the current enabled extension type is.
+*/
 #define dolphiimote_EXTENSION_NONE 0x0000
 #define dolphiimote_EXTENSION_NUNCHUCK 0x0001
 #define dolphiimote_EXTENSION_CLASSIC_CONTROLLER 0x0002
@@ -175,10 +213,22 @@ void dolphiimote_log_level(uint8_t log_level);
 #define dolphiimote_EXTENSION_GUITAR_HERO_WORLD_TOUR_DRUMS 0x0010
 #define dolphiimote_EXTENSION_MOTION_PLUS 0x0020
 
+/*
+  dolphiimote_CAPABILITIES_* are the capabilities that can be enabled.
+
+  Valid combinations between MOTION_PLUS and EXTENSION are either or, or both with certain extensions.
+
+  More documentation to follow.
+*/
 #define dolphiimote_CAPABILITIES_MOTION_PLUS 0x0002
 #define dolphiimote_CAPABILITIES_EXTENSION 0x0004
 #define dolphiimote_CAPABILITIES_IR 0x0008
 
+/*
+  These are used to set the dolphiimote logging engine to different log levels.
+
+  Log messages to the callback function log_received will be filtered with the function 'message_level >= log_level'   
+*/
 #define dolphiimote_LOG_LEVEL_DEBUG 0
 #define dolphiimote_LOG_LEVEL_INFO 1
 #define dolphiimote_LOG_LEVEL_WARNING 2

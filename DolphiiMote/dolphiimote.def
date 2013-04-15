@@ -7,3 +7,4 @@ EXPORTS
 	dolphiimote_determine_capabilities
 	dolphiimote_enable_capabilities
 	dolphiimote_log_level
+	dolphiimote_shutdown

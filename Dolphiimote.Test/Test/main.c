@@ -21,7 +21,7 @@
 
 int state = 0;
 
-void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_data *data, void *userdata)
+void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *data, void *userdata)
 {
   printf("wiimote %i:\t", wiimote_number);
 
@@ -83,7 +83,7 @@ void on_data_received(unsigned int wiimote_number, struct dolphiimote_wiimote_da
   printf("\n");
 }
 
-void on_capabilities_changed(unsigned int wiimote, dolphiimote_capability_status *status, void *userdata)
+void on_capabilities_changed(uint8_t wiimote, dolphiimote_capability_status *status, void *userdata)
 {
   printf("wiimote %i capabilities:\n", wiimote);
   printf("Extension: ");
@@ -142,16 +142,28 @@ void on_capabilities_changed(unsigned int wiimote, dolphiimote_capability_status
   dolphiimote_set_reporting_mode(wiimote, 0x35);  
 }
 
-void on_log_received(const char* str, int size)
+void on_log_received(const char* str, uint32_t size)
 {
   printf_s(str);
 }
 
-int main()
+void init_dolphiimote(dolphiimote_callbacks callbacks)
 {
-  dolphiimote_callbacks callbacks = { 0 };
   int wiimote_flags;
   int i;
+  wiimote_flags = dolphiimote_init(callbacks);  
+
+  for(i = 0; i < dolphiimote_MAX_WIIMOTES; i++, wiimote_flags >>= 1)
+  {
+    if(wiimote_flags & 0x01)
+      dolphiimote_determine_capabilities(i);
+  }
+}
+
+int main()
+{
+  dolphiimote_callbacks callbacks = { 0 };  
+  int loop = 0;
 
   callbacks.data_received = on_data_received;
   callbacks.capabilities_changed = on_capabilities_changed;
@@ -159,13 +171,7 @@ int main()
 
   dolphiimote_log_level(dolphiimote_LOG_LEVEL_DEBUG);
 
-  wiimote_flags = dolphiimote_init(callbacks, NULL);  
-
-  for(i = 0; i < dolphiimote_MAX_WIIMOTES; i++, wiimote_flags >>= 1)
-  {
-    if(wiimote_flags & 0x01)
-      dolphiimote_determine_capabilities(i);
-  }
+  init_dolphiimote(callbacks);
 
   while(1)
   {

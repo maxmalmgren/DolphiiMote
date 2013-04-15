@@ -32,10 +32,12 @@ namespace dolphiimote {
 
   int dolphiimote_host::init()
   {
-    log_keeper::instance().set_output([this](std::string &output)
+    auto local_callbacks = callbacks;
+
+    log_keeper::instance().set_output([local_callbacks](std::string &output)
     {
-      if(callbacks.log_received)
-        callbacks.log_received(output.c_str(), output.size());
+      if(local_callbacks.log_received)
+        local_callbacks.log_received(output.c_str(), output.size());
     });
 
     WiimoteReal::LoadSettings();
