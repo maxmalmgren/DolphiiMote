@@ -29,9 +29,19 @@ namespace dolphiimote {
       return [=](const wiimote& mote) { return mote.extension_type == extension; };
     }
 
-        std::function<bool(const wiimote&)> motion_plus_filter()
+    std::function<bool(const wiimote&)> motion_plus_filter()
     {
       return [=](const wiimote& mote) { return is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus); };
+    }
+
+    std::function<bool(const wiimote&)> nunchuck_filter()
+    {
+      return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::Nunchuck)(mote) && !motion_plus_filter()(mote); };
+    }
+
+    std::function<bool(const wiimote&)> interleaved_nunchuck_filter()
+    {
+      return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::Nunchuck)(mote) && motion_plus_filter()(mote); };
     }
 
     void setup_retrievers()
@@ -41,7 +51,8 @@ namespace dolphiimote {
       standard_retrievers.push_back(std::make_pair(8 | 64 | 128, serialization::retrieve_infrared_camera_data)); 
 
       extension_retrievers.push_back(std::make_pair(motion_plus_filter(), serialization::retrieve_motion_plus));
-      extension_retrievers.push_back(std::make_pair(standard_extension_filter(wiimote_extensions::Nunchuck), serialization::retrieve_nunchuck));
+      extension_retrievers.push_back(std::make_pair(nunchuck_filter(), serialization::retrieve_nunchuck));
+      extension_retrievers.push_back(std::make_pair(interleaved_nunchuck_filter(), serialization::retrieve_interleaved_nunchuck));
     }
 
     void setup_extension_offsets()

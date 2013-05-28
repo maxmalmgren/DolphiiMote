@@ -40,7 +40,7 @@ namespace dolphiimote { namespace serialization {
   {
     u8 speed_mask = ~0x03;
 
-    if(extension_data.size() >= 6)
+    if(extension_data.size() >= 6 && (extension_data[5] & 0x02))
     {
       output.valid_data_flags |= dolphiimote_MOTIONPLUS_VALID;
 
@@ -66,6 +66,22 @@ namespace dolphiimote { namespace serialization {
       output.nunchuck.z = (extension_data[4] << 2) | (extension_data[5] & 0xC0) >> 6;
 
       output.nunchuck.buttons = ~(extension_data[5]) & 0x3;
+    }
+  }
+
+  void retrieve_interleaved_nunchuck(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output)
+  {
+    if(extension_data.size() >= 6 && !(extension_data[5] & 0x03))
+    {    
+      output.valid_data_flags |= dolphiimote_NUNCHUCK_VALID;
+
+      output.nunchuck.stick_x = extension_data[0];
+      output.nunchuck.stick_y = extension_data[1];
+      output.nunchuck.x = (extension_data[2] << 1) | (extension_data[5] & 0x10) >> 4;
+      output.nunchuck.y = (extension_data[3] << 1) | (extension_data[5] & 0x20) >> 5;
+      output.nunchuck.z = ((extension_data[4] & ~0x1) << 1 ) | (extension_data[5] & 0xC0) >> 6;
+
+      output.nunchuck.buttons = ~(extension_data[5] >> 2) & 0x3;
     }
   }
 
