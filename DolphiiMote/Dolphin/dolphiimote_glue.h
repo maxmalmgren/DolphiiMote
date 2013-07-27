@@ -61,14 +61,13 @@ template <typename T>
     void notify(TFunc func, TK arg1)
     {
       std::function<void(T*, TK)> resolved_func = std::mem_fn(func);
-      std::lock_guard<std::recursive_mutex> lock(callback_lock);
 
 	  remove_expired_listeners();
 
 	  for(std::weak_ptr<T> &listener : listeners)
 	  {
-		auto& locked = listener.lock();
-		resolved_func(locked.get(), arg1);
+		  auto& locked = listener.lock();
+		  resolved_func(locked.get(), arg1);
 	  }
 	}
 
@@ -76,27 +75,25 @@ template <typename T>
     void notify(TFunc func, TK arg1, TX arg2)
     {
       std::function<void(T*, TK, TX)> resolved_func = std::mem_fn(func);
-      std::lock_guard<std::recursive_mutex> lock(callback_lock);
 
-	  remove_expired_listeners();
+	    remove_expired_listeners();
 
       for(std::weak_ptr<T> &listener : listeners)
-	  {
-		auto& locked = listener.lock();
-		resolved_func(locked.get(), arg1, arg2);
-	  }
+	    {
+		    auto& locked = listener.lock();
+		    resolved_func(locked.get(), arg1, arg2);
+	    }
     }
 
     template <typename TFunc, typename TK, typename TX, typename TY, typename TZ>
     void notify(TFunc func, TK arg1, TX arg2, TY arg3, TZ arg4)
     {
       std::function<void(T*, TK, TX, TY, TZ)> resolved_func = std::mem_fn(func);
-      std::lock_guard<std::recursive_mutex> lock(callback_lock);
 
-	  remove_expired_listeners();
+	    remove_expired_listeners();
 
       for(std::weak_ptr<T> &listener : listeners)
-	  {
+	    {
         auto& locked = listener.lock();
         resolved_func(locked.get(), arg1, arg2, arg3, arg4);
       }
@@ -109,13 +106,11 @@ template <typename T>
 
     void add(std::weak_ptr<T> listener)
     {
-      std::lock_guard<std::recursive_mutex> lock(callback_lock);
       listeners.push_back(listener);
     }
 
   private:
     std::vector<std::weak_ptr<T>> listeners;
-    std::recursive_mutex callback_lock;
   };
 
   class wiimote_listener

@@ -68,7 +68,7 @@ void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *d
     printf("Two ");
 
   if(data->valid_data_flags & dolphiimote_ACCELERATION_VALID)
-    printf("Acc: %02X%02X%02X\t", data->acceleration.x, data->acceleration.y, data->acceleration.z);
+    printf("Acc: %02d %02d %02d\t", data->acceleration.x, data->acceleration.y, data->acceleration.z);
 
   if(data->valid_data_flags & dolphiimote_MOTIONPLUS_VALID)
     printf("Motion Plus: %04X%04X%04X\t", data->motionplus.yaw_down_speed, data->motionplus.pitch_left_speed, data->motionplus.roll_left_speed);
@@ -175,7 +175,8 @@ int main()
 
   while(1)
   {
-    Sleep(10);
     dolphiimote_update();
+    Sleep(10);
   }
+  //dolphiimote_shutdown();
 }

@@ -107,9 +107,9 @@ namespace dolphiimote { namespace serialization {
     {    
       output.valid_data_flags |= dolphiimote_ACCELERATION_VALID;
 
-      output.acceleration.x = data[4];
-      output.acceleration.y = data[5];
-      output.acceleration.z = data[6];
+      output.acceleration.x = (data[4] << 2) | (data[2] >> 5 & 0x3);
+      output.acceleration.y = (data[5] << 2) | (data[3] >> 4 & 0x2);
+      output.acceleration.z = (data[6] << 2) | (data[3] >> 5 & 0x2);
     }
   }
   }
