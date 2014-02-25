@@ -23,7 +23,7 @@ int state = 0;
 
 void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *data, void *userdata)
 {
-  printf("wiimote %i:\t", wiimote_number);
+  printf("wiimote %i: ", wiimote_number);
 
   if(data->button_state & dolphiimote_BUTTON_A)
   {
@@ -78,6 +78,55 @@ void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *d
     int c = data->nunchuck.buttons & dolphiimote_NUNCHUCK_BUTTON_C;
     int z = data->nunchuck.buttons & dolphiimote_NUNCHUCK_BUTTON_Z;
     printf("Nunchuck: C: %i, Z: %i, Acc: %02X%02X%02X Stick X: %i, Y: %i\t", c, z, data->nunchuck.x, data->nunchuck.y, data->nunchuck.z, data->nunchuck.stick_x, data->nunchuck.stick_y);
+  }
+
+  if(data->valid_data_flags & dolphiimote_CLASSIC_CONTROLLER_VALID)
+  {
+
+    int lx = data->classic_controller.left_stick_x;
+    int ly = data->classic_controller.left_stick_y;
+    int rx = data->classic_controller.right_stick_x;
+    int ry = data->classic_controller.right_stick_y;
+    int lt = data->classic_controller.left_trigger;
+    int rt = data->classic_controller.right_trigger;
+
+    printf("Classic: L:%02d,%02d R:%02d,%02d T:%02d,%02d\t",lx,ly,rx,ry,lt,rt);
+
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_A)
+      printf("A");
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_B)
+      printf("B");
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_X)
+      printf("X");
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_Y)
+      printf("Y");
+
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_DPAD_LEFT)
+      printf("DL");
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_DPAD_RIGHT)
+      printf("DR");
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_DPAD_DOWN)
+      printf("DD");
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_DPAD_UP)
+      printf("DU");
+
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_TRIGGER_LEFT)
+      printf("LT");
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_TRIGGER_RIGHT)
+      printf("RT");
+
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_Z_LEFT)
+      printf("LZ");
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_Z_RIGHT)
+      printf("RZ");
+
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_PLUS)
+      printf("+");
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_MINUS)
+      printf("-");
+
+    if(data->classic_controller.buttons & dolphiimote_CLASSIC_CONTROLLER_BUTTON_HOME)
+      printf("H");
   }
 
   printf("\n");

@@ -44,6 +44,16 @@ namespace dolphiimote {
       return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::Nunchuck)(mote) && motion_plus_filter()(mote); };
     }
 
+    std::function<bool(const wiimote&)> classic_controller_filter()
+    {
+      return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::ClassicController)(mote) && !motion_plus_filter()(mote); };
+    }
+
+    std::function<bool(const wiimote&)> interleaved_classic_controller_filter()
+    {
+      return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::ClassicController)(mote) && motion_plus_filter()(mote); };
+    }
+
     void setup_retrievers()
     {
       standard_retrievers.push_back(std::make_pair(0xFFFF, serialization::retrieve_button_state));
@@ -53,6 +63,8 @@ namespace dolphiimote {
       extension_retrievers.push_back(std::make_pair(motion_plus_filter(), serialization::retrieve_motion_plus));
       extension_retrievers.push_back(std::make_pair(nunchuck_filter(), serialization::retrieve_nunchuck));
       extension_retrievers.push_back(std::make_pair(interleaved_nunchuck_filter(), serialization::retrieve_interleaved_nunchuck));
+      extension_retrievers.push_back(std::make_pair(classic_controller_filter(), serialization::retrieve_classic_controller));
+      extension_retrievers.push_back(std::make_pair(interleaved_classic_controller_filter(), serialization::retrieve_interleaved_classic_controller));
     }
 
     void setup_extension_offsets()
