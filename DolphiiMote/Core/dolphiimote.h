@@ -60,6 +60,24 @@ typedef struct dolphiimote_nunchuck
 
 } dolphiimote_nunchuck;
 
+typedef struct dolphiimote_classic_controller
+{
+  //left analog stick, 0-63
+  uint8_t left_stick_x;
+  uint8_t left_stick_y;
+
+  //right analog stick, 0-31
+  uint8_t right_stick_x;
+  uint8_t right_stick_y;
+
+  //analog triggers, 0-31
+  uint8_t left_trigger;
+  uint8_t right_trigger;
+
+  uint16_t buttons;
+
+} dolphiimote_classic_controller;
+
 typedef struct dolphiimote_motionplus
 {
   uint16_t yaw_down_speed;
@@ -79,6 +97,7 @@ typedef struct dolphiimote_wiimote_data
   dolphiimote_acceleration acceleration;
   dolphiimote_motionplus motionplus;
   dolphiimote_nunchuck nunchuck;
+  dolphiimote_classic_controller classic_controller;
 } dolphiimote_wiimote_data;
 
 typedef struct dolphiimote_capability_status
@@ -173,6 +192,7 @@ void dolphiimote_log_level(uint8_t log_level);
 #define dolphiimote_ACCELERATION_VALID 0x0002
 #define dolphiimote_MOTIONPLUS_VALID 0x0004
 #define dolphiimote_NUNCHUCK_VALID 0x0008
+#define dolphiimote_CLASSIC_CONTROLLER_VALID 0x0001
 
 /*
   These are the button states, as they are saved in dolphiimote_button_state
@@ -200,6 +220,30 @@ void dolphiimote_log_level(uint8_t log_level);
 */
 #define dolphiimote_NUNCHUCK_BUTTON_Z 0x01
 #define dolphiimote_NUNCHUCK_BUTTON_C 0x02
+
+/*
+  dolphiimote_CLASSIC_CONTROLLER_BUTTON_* are the Classic Controller buttons, as they are saved in dolphiimote_classic_controller
+*/
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_DPAD_LEFT 0x0002
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_DPAD_RIGHT 0x8000
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_DPAD_DOWN 0x4000
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_DPAD_UP 0x0001
+
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_A 0x0010
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_B 0x0040
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_X 0x0008
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_Y 0x0020
+
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_TRIGGER_LEFT 0x2000
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_TRIGGER_RIGHT 0x0200
+
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_Z_LEFT 0x0080
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_Z_RIGHT 0x0004
+
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_PLUS 0x0400
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_MINUS 0x1000
+
+#define dolphiimote_CLASSIC_CONTROLLER_BUTTON_HOME 0x0800
 
 /*
   dolphiimote_EXTENSION_* are the available extension types. Use them with dolphiimote_capability_status.extension_type

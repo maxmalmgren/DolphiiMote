@@ -242,6 +242,9 @@ namespace dolphiimote {
   void capability_discoverer::enable_motion_plus_extension_passthrough(int wiimote_number)
   {
     sender.write_register(wiimote_number, 0xA600FE, 0x05, 1);
+    
+    /* for Classic Controller Interleave with MotionPlus, need to send 0x07, not 0x05 (numchuck)
+    sender.write_register(wiimote_number, 0xA600FE, 0x07, 1);*/
 
     auto& mote = wiimote_states[wiimote_number];
 
