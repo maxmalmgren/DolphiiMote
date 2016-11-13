@@ -46,12 +46,12 @@ namespace dolphiimote {
 
     std::function<bool(const wiimote&)> classic_controller_filter()
     {
-      return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::ClassicController)(mote) && !motion_plus_filter()(mote); };
+		return [=](const wiimote& mote) { return (standard_extension_filter(wiimote_extensions::ClassicControllerPro)(mote) || standard_extension_filter(wiimote_extensions::ClassicController)(mote)) && !motion_plus_filter()(mote); };
     }
 
     std::function<bool(const wiimote&)> interleaved_classic_controller_filter()
     {
-      return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::ClassicController)(mote) && motion_plus_filter()(mote); };
+		return [=](const wiimote& mote) { return (standard_extension_filter(wiimote_extensions::ClassicControllerPro)(mote) || standard_extension_filter(wiimote_extensions::ClassicController)(mote)) && motion_plus_filter()(mote); };
     }
 
     void setup_retrievers()
