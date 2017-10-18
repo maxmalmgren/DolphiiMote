@@ -16,3 +16,5 @@ tmp/**
 *.sdf
 *.filters
 *.opensdf
+*.opendb
+*.VC.db

@@ -46,7 +46,7 @@ namespace dolphiimote {
     auto& mote = wiimote_states[wiimote];
 
     mote.available_capabilities &= ~wiimote_capabilities::Extension;
-    mote.set_extension_disabled();
+	mote.set_extension_disabled();
   }
 
   bool passthrough_mode(wiimote &mote)
@@ -120,14 +120,20 @@ namespace dolphiimote {
   {
     if(_id_to_extension_type.size() == 0)
     {
+      _id_to_extension_type[0x000000000000] = wiimote_extensions::None;
       _id_to_extension_type[0x0000A4200000] = wiimote_extensions::Nunchuck;
+      _id_to_extension_type[0x0000A4200505] = wiimote_extensions::Nunchuck; // Activated Wii Motion Plus in Nunchuck passthrough mode
+      _id_to_extension_type[0x0100A4200505] = wiimote_extensions::Nunchuck; // Activated Wii Motion Plus in Nunchuck passthrough mode
       _id_to_extension_type[0xFF00A4200000] = wiimote_extensions::Nunchuck; //WEIRD - had a nunchuk that always gave off this ID. Was there any difference?
       _id_to_extension_type[0x0000A4200101] = wiimote_extensions::ClassicController;
+      _id_to_extension_type[0x0000A4200705] = wiimote_extensions::ClassicController; // Activated Wii Motion Plus in Classic Controller passthrough mode
+      _id_to_extension_type[0x0100A4200705] = wiimote_extensions::ClassicController; // Activated Wii Motion Plus in Classic Controller passthrough mode
       _id_to_extension_type[0x0100A4200101] = wiimote_extensions::ClassicControllerPro;
       _id_to_extension_type[0x0000A4200103] = wiimote_extensions::GHGuitar;
       _id_to_extension_type[0x0100A4200103] = wiimote_extensions::GHWorldTourDrums;
 	  _id_to_extension_type[0x0000A4200402] = wiimote_extensions::BalanceBoard;
       _id_to_extension_type[0x0000A4200405] = wiimote_extensions::MotionPlus;
+      _id_to_extension_type[0x0100A4200405] = wiimote_extensions::MotionPlus;
     }
 
     return _id_to_extension_type;
@@ -135,12 +141,14 @@ namespace dolphiimote {
 
   void capability_discoverer::update_extension_type_from_id(int wiimote_number)
   {
-    auto id = wiimote_states[wiimote_number].extension_id;
-
-    if(id_to_extension_type().find(id) != id_to_extension_type().end())
+    u64 id = wiimote_states[wiimote_number].extension_id;
+    
+    if (id_to_extension_type().find(id) != id_to_extension_type().end())
       wiimote_states[wiimote_number].extension_type = id_to_extension_type()[id];
     else if (id == 0xFFFFFFFFFFFF)
       init_and_identify_extension_controller(wiimote_number); //Retry, because the controller extension was likely just plugged in (status report).
+    else 
+      printf("capability_discoverer::update_extension_type_from_id: id %012llx NOT FOUND\n", id);
   }
 
   u64 capability_discoverer::read_extension_id(checked_array<const u8> data)
@@ -160,8 +168,18 @@ namespace dolphiimote {
 
     if(error_bit == 0 && data.valid())
     {
-      wiimote_states[wiimote_number].extension_id = read_extension_id(extension_id);
-      wiimote_states[wiimote_number].enabled_capabilities |= wiimote_capabilities::Extension;
+      u64 id = read_extension_id(extension_id);
+      wiimote_states[wiimote_number].extension_id = id;
+      if (id == 0x0100A4200405)
+      {
+		  wiimote_states[wiimote_number].enabled_capabilities &= ~wiimote_capabilities::Extension;
+		  wiimote_states[wiimote_number].enabled_capabilities |= wiimote_capabilities::MotionPlus;
+      }
+      else
+      {
+		  wiimote_states[wiimote_number].enabled_capabilities |= wiimote_capabilities::Extension;
+		  wiimote_states[wiimote_number].available_capabilities |= wiimote_capabilities::Extension;
+      }
     }
     else
     {
@@ -233,7 +251,7 @@ namespace dolphiimote {
 
   void capability_discoverer::send_extension_id_read_message(int wiimote_number)
   {
-    reader.read(wiimote_number, 0XA400FA, 6, std::bind(&capability_discoverer::handle_extension_id_message, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    reader.read(wiimote_number, 0XA400FA, 0x06, std::bind(&capability_discoverer::handle_extension_id_message, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     //According to wiibrew: Read 0xa400fa for 6 extension ID bytes.
   }
 
@@ -248,7 +266,7 @@ namespace dolphiimote {
   void capability_discoverer::determine_capabilities(int wiimote_number)
   {
     reader.read(wiimote_number, 0xA600FE, 0x02, std::bind(&capability_discoverer::handle_motionplus_id_message, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-
+    //According to wiibrew: Read 0xa600fe for 2 extension ID bytes.
     init_and_identify_extension_controller(wiimote_number);
   }
 
@@ -259,14 +277,14 @@ namespace dolphiimote {
 
   void capability_discoverer::enable_motion_plus_no_passthrough(int wiimote_number)
   {
-    sender.write_register(wiimote_number, 0xA600FE, 0x4, 1);
+    sender.write_register(wiimote_number, 0xA400F0, 0x55, 1); 
+    sender.write_register(wiimote_number, 0xA400FB, 0x00, 1); 
+    sender.write_register(wiimote_number, 0xA600F0, 0x55, 1); 
+    sender.write_register(wiimote_number, 0xA600FE, 0x04, 1, std::bind(&capability_discoverer::send_extension_id_read_message, this, std::placeholders::_1));
 
     auto& mote = wiimote_states[wiimote_number];
-
+    mote.enabled_capabilities &= ~wiimote_capabilities::Extension;
     mote.enabled_capabilities |= wiimote_capabilities::MotionPlus;
-    mote.set_extension_disabled();
-
-    dispatch_capabilities_changed(wiimote_number, callbacks);
   }
 
   void capability_discoverer::enable_only_extension(int wiimote)
@@ -283,21 +301,25 @@ namespace dolphiimote {
 
   void capability_discoverer::enable_motion_plus_extension_passthrough(int wiimote_number)
   {
-    sender.write_register(wiimote_number, 0xA600FE, 0x05, 1);
-    
+    sender.write_register(wiimote_number, 0xA400F0, 0x55, 1); 
+    sender.write_register(wiimote_number, 0xA400FB, 0x00, 1);
+    sender.write_register(wiimote_number, 0xA600F0, 0x55, 1);
+	
+    if (wiimote_states[wiimote_number].extension_type == ( dolphiimote_EXTENSION_CLASSIC_CONTROLLER 
+		| dolphiimote_EXTENSION_CLASSIC_CONTROLLER_PRO | dolphiimote_EXTENSION_GUITAR_HERO_GUITAR 
+		| dolphiimote_EXTENSION_GUITAR_HERO_WORLD_TOUR_DRUMS ))
+		sender.write_register(wiimote_number, 0xA600FE, 0x07, 1, std::bind(&capability_discoverer::send_extension_id_read_message, this, std::placeholders::_1));
+    else
+		sender.write_register(wiimote_number, 0xA600FE, 0x05, 1, std::bind(&capability_discoverer::send_extension_id_read_message, this, std::placeholders::_1));
     /* for Classic Controller Interleave with MotionPlus, need to send 0x07, not 0x05 (numchuck)
     sender.write_register(wiimote_number, 0xA600FE, 0x07, 1);*/
 
-    auto& mote = wiimote_states[wiimote_number];
-
-    mote.enabled_capabilities |= wiimote_capabilities::MotionPlus | wiimote_capabilities::Extension;
-
-    dispatch_capabilities_changed(wiimote_number, callbacks);
+    wiimote_states[wiimote_number].enabled_capabilities |= wiimote_capabilities::MotionPlus | wiimote_capabilities::Extension;
   }
 
   void capability_discoverer::handle_motion_plus_and_extension_enabling(int wiimote_number, wiimote_capabilities::type capabilities_to_enable)
   {
-    if(is_set(capabilities_to_enable, wiimote_capabilities::Extension) && is_set(capabilities_to_enable, wiimote_capabilities::MotionPlus))
+    if((capabilities_to_enable & wiimote_capabilities::Extension) && (capabilities_to_enable & wiimote_capabilities::MotionPlus))
       enable_motion_plus_extension_passthrough(wiimote_number);
     else if(is_set(capabilities_to_enable, wiimote_capabilities::Extension))
       enable_only_extension(wiimote_number);
@@ -312,10 +334,17 @@ namespace dolphiimote {
   void capability_discoverer::enable(int wiimote_number, wiimote_capabilities::type capabilities_to_enable)
   {
     if(capabilities_to_enable == wiimote_states[wiimote_number].enabled_capabilities)
-      return;
-
+	{
+		printf("capability_discoverer::enable: Capabilities already enabled\n");
+		return;
+	}
+	
     if((capabilities_to_enable & wiimote_states[wiimote_number].available_capabilities) != capabilities_to_enable)
-      return;
+	{
+		printf("capability_discoverer::enable: Capabilities not available to enable. Checking capabilities\n");
+		determine_capabilities(wiimote_number);
+		return;
+	}
 
     handle_motion_plus_and_extension_enabling(wiimote_number, capabilities_to_enable);
   }

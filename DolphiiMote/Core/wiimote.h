@@ -137,6 +137,7 @@ namespace dolphiimote
     void set_extension_disabled()
     {
       enabled_capabilities &= ~wiimote_capabilities::Extension;
+	  available_capabilities &= ~wiimote_capabilities::Extension;
       extension_id = 0;
       extension_type = 0;
     }
