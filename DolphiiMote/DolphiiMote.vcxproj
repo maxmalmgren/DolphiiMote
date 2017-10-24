@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2BDC037D-1FC6-4611-B956-B6AF1CF51DE1}</ProjectGuid>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <Keyword>ManagedCProj</Keyword>
+    <RootNamespace>dolphiimote</RootNamespace>
+    <ProjectName>DolphiiMote</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CLRSupport>false</CLRSupport>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CLRSupport>false</CLRSupport>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>setupapi.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>dolphiimote.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>setupapi.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>dolphiimote.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Core\capability_discoverer.cpp" />
+    <ClCompile Include="Core\data_reporter.cpp" />
+    <ClCompile Include="Core\data_sender.cpp" />
+    <ClCompile Include="Core\dolphiimote.cpp" />
+    <ClCompile Include="Core\dolphiimote_host.cpp" />
+    <ClCompile Include="Core\rumbler.cpp" />
+    <ClCompile Include="Core\serialization.cpp" />
+    <ClCompile Include="Core\Util\log.cpp" />
+    <ClCompile Include="Core\wiimote.cpp" />
+    <ClCompile Include="Core\wiimote_reader.cpp" />
+    <ClCompile Include="Dolphin\IOWin.cpp" />
+    <ClCompile Include="Dolphin\StringUtil.cpp" />
+    <ClCompile Include="Dolphin\Timer.cpp" />
+    <ClCompile Include="Dolphin\Wiimote.cpp" />
+    <ClCompile Include="Dolphin\WiimoteReal.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Core\capability_discoverer.h" />
+    <ClInclude Include="Core\data_reporter.h" />
+    <ClInclude Include="Core\data_sender.h" />
+    <ClInclude Include="Core\dolphiimote.h" />
+    <ClInclude Include="Core\dolphiimote_host.h" />
+    <ClInclude Include="Core\logging_capability_discoverer.h" />
+    <ClInclude Include="Core\rumbler.h" />
+    <ClInclude Include="Core\serialization.h" />
+    <ClInclude Include="Core\Util\collections.h" />
+    <ClInclude Include="Core\Util\enum.h" />
+    <ClInclude Include="Core\Util\log.h" />
+    <ClInclude Include="Core\Util\typesafe.h" />
+    <ClInclude Include="Core\wiimote.h" />
+    <ClInclude Include="Core\wiimote_reader.h" />
+    <ClInclude Include="Dolphin\Atomic.h" />
+    <ClInclude Include="Dolphin\Atomic_Win32.h" />
+    <ClInclude Include="Dolphin\ChunkFile.h" />
+    <ClInclude Include="Dolphin\Common.h" />
+    <ClInclude Include="Dolphin\CommonFuncs.h" />
+    <ClInclude Include="Dolphin\CommonPaths.h" />
+    <ClInclude Include="Dolphin\CommonTypes.h" />
+    <ClInclude Include="Dolphin\dolphiimote_glue.h" />
+    <ClInclude Include="Dolphin\FifoQueue.h" />
+    <ClInclude Include="Dolphin\Log.h" />
+    <ClInclude Include="Dolphin\StringUtil.h" />
+    <ClInclude Include="Dolphin\Timer.h" />
+    <ClInclude Include="Dolphin\Wiimote.h" />
+    <ClInclude Include="Dolphin\WiimoteHid.h" />
+    <ClInclude Include="Dolphin\WiimoteReal.h" />
+    <ClInclude Include="Dolphin\WiimoteRealBase.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dolphiimote.def" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
