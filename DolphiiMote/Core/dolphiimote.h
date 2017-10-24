@@ -88,6 +88,43 @@ typedef struct dolphiimote_motionplus
   uint8_t extension_connected;
 } dolphiimote_motionplus;
 
+typedef struct dolphiimote_balance_board_sensor_raw {
+	uint16_t top_right;
+	uint16_t bottom_right;
+	uint16_t top_left;
+	uint16_t bottom_left;
+} dolphiimote_balance_board_sensor_raw;
+typedef struct dolphiimote_balance_board_sensor {
+	float top_right;
+	float bottom_right;
+	float top_left;
+	float bottom_left;
+} dolphiimote_balance_board_sensor;
+typedef struct dolphiimote_balance_board
+{
+	dolphiimote_balance_board_sensor_raw raw;
+	dolphiimote_balance_board_sensor kg;
+	dolphiimote_balance_board_sensor lb;
+	float weight_kg;
+	float weight_lb;
+	float center_of_gravity_x;
+	float center_of_gravity_y;
+
+} dolphiimote_balance_board;
+typedef struct dolphiimote_guitar
+{
+	uint8_t is_gh3;
+	//left analog stick, 0-63
+	uint8_t stick_x;
+	uint8_t stick_y;
+
+	//right analog stick, 0-31
+	uint8_t tap_bar;
+	uint8_t whammy_bar;
+
+	uint16_t buttons;
+
+} dolphiimote_guitar;
 typedef struct dolphiimote_wiimote_data
 {  
   dolphiimote_button_state button_state;
@@ -98,6 +135,9 @@ typedef struct dolphiimote_wiimote_data
   dolphiimote_motionplus motionplus;
   dolphiimote_nunchuck nunchuck;
   dolphiimote_classic_controller classic_controller;
+  dolphiimote_guitar guitar;
+  dolphiimote_balance_board balance_board;
+
 } dolphiimote_wiimote_data;
 
 typedef struct dolphiimote_capability_status
@@ -192,6 +232,8 @@ void dolphiimote_log_level(uint8_t log_level);
 #define dolphiimote_ACCELERATION_VALID 0x0002
 #define dolphiimote_MOTIONPLUS_VALID 0x0004
 #define dolphiimote_NUNCHUCK_VALID 0x0008
+#define dolphiimote_GUITAR_VALID 0x0010
+#define dolphiimote_BALANCE_BOARD_VALID 0x0020
 #define dolphiimote_CLASSIC_CONTROLLER_VALID 0x0001
 
 /*
@@ -244,7 +286,20 @@ void dolphiimote_log_level(uint8_t log_level);
 #define dolphiimote_CLASSIC_CONTROLLER_BUTTON_MINUS 0x1000
 
 #define dolphiimote_CLASSIC_CONTROLLER_BUTTON_HOME 0x0800
+/*
+dolphiimote_GUITAR_BUTTON_* are the Classic Controller buttons, as they are saved in dolphiimote_classic_controller
+*/
+#define dolphiimote_GUITAR_BUTTON_STRUM_DOWN 0x4000
+#define dolphiimote_GUITAR_BUTTON_STRUM_UP 0x0001
 
+#define dolphiimote_GUITAR_BUTTON_Green 0x0010
+#define dolphiimote_GUITAR_BUTTON_RED 0x0040
+#define dolphiimote_GUITAR_BUTTON_YELLOW 0x0008
+#define dolphiimote_GUITAR_BUTTON_BLUE 0x0020
+#define dolphiimote_GUITAR_BUTTON_ORANGE 0x0080
+
+#define dolphiimote_GUITAR_BUTTON_PLUS 0x0400
+#define dolphiimote_GUITAR_BUTTON_MINUS 0x1000
 /*
   dolphiimote_EXTENSION_* are the available extension types. Use them with dolphiimote_capability_status.extension_type
   to determine what the current enabled extension type is.
@@ -256,6 +311,7 @@ void dolphiimote_log_level(uint8_t log_level);
 #define dolphiimote_EXTENSION_GUITAR_HERO_GUITAR 0x0008
 #define dolphiimote_EXTENSION_GUITAR_HERO_WORLD_TOUR_DRUMS 0x0010
 #define dolphiimote_EXTENSION_MOTION_PLUS 0x0020
+#define dolphiimote_EXTENSION_BALANCE_BOARD 0x0030
 
 /*
   dolphiimote_CAPABILITIES_* are the capabilities that can be enabled.

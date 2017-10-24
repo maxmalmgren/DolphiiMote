@@ -18,7 +18,7 @@
 #include "capability_discoverer.h"
 
 namespace dolphiimote {
-  
+
   void capability_discoverer::data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data)
   {
     u8 message_type = data[1];
@@ -126,6 +126,7 @@ namespace dolphiimote {
       _id_to_extension_type[0x0100A4200101] = wiimote_extensions::ClassicControllerPro;
       _id_to_extension_type[0x0000A4200103] = wiimote_extensions::GHGuitar;
       _id_to_extension_type[0x0100A4200103] = wiimote_extensions::GHWorldTourDrums;
+	  _id_to_extension_type[0x0000A4200402] = wiimote_extensions::BalanceBoard;
       _id_to_extension_type[0x0000A4200405] = wiimote_extensions::MotionPlus;
     }
 
@@ -155,7 +156,6 @@ namespace dolphiimote {
   void capability_discoverer::handle_extension_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
   {
     u8 error_bit = reader.read_error_bit(data);
-
     checked_array<const u8> extension_id = data.sub_array(7, 6);
 
     if(error_bit == 0 && data.valid())
@@ -168,11 +168,53 @@ namespace dolphiimote {
       wiimote_states[wiimote_number].extension_id = 0;
       wiimote_states[wiimote_number].enabled_capabilities &= ~wiimote_capabilities::Extension;
     }
-
     update_extension_type_from_id(wiimote_number);
     dispatch_capabilities_changed(wiimote_number, callbacks);
+	
+	if (wiimote_states[wiimote_number].extension_type == wiimote_extensions::BalanceBoard) {
+		reader.read(wiimote_number, 0xA40024, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+		reader.read(wiimote_number, 0xA40024+16, 8, std::bind(&capability_discoverer::handle_balanceboard_calibration2, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	}
+	if (wiimote_states[wiimote_number].extension_type == wiimote_extensions::Nunchuck) {
+		reader.read(wiimote_number, 0xA40020, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	}
+	if (wiimote_states[wiimote_number].extension_type == wiimote_extensions::ClassicController || wiimote_states[wiimote_number].extension_type == wiimote_extensions::ClassicControllerPro) {
+		reader.read(wiimote_number, 0xA40020, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	}
   }
+  void capability_discoverer::handle_classic_controller_calibration(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
+  {
+	  u8 error_bit = reader.read_error_bit(data);
+	  checked_array<const u8> calib = data.sub_array(7, 16);
+  }
+  void capability_discoverer::handle_nunchuck_calibration(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
+  {
+	  u8 error_bit = reader.read_error_bit(data);
+	  checked_array<const u8> calib = data.sub_array(7, 16);
+  }
+  void capability_discoverer::handle_balanceboard_calibration1(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
+  {
+	  u8 error_bit = reader.read_error_bit(data);
+	  checked_array<const u8> calib = data.sub_array(7, 16);
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg0.top_right = calib[0] << 8 | calib[1];
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg0.bottom_right = calib[2] << 8 | calib[3];
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg0.top_left = calib[4] << 8 | calib[5];
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg0.bottom_left = calib[6] << 8 | calib[7];
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg17.top_right = calib[8] << 8 | calib[9];
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg17.bottom_right = calib[10] << 8 | calib[11];
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg17.top_left = calib[12] << 8 | calib[13];
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg17.bottom_left = calib[14] << 8 | calib[15];
+  }
+  void capability_discoverer::handle_balanceboard_calibration2(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
+  {
+	  u8 error_bit = reader.read_error_bit(data);
+	  checked_array<const u8> calib = data.sub_array(7, 8);
 
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg34.top_right = calib[0] << 8 | calib[1];
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg34.bottom_right = calib[2] << 8 | calib[3];
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg34.top_left = calib[4] << 8 | calib[5];
+	  wiimote_states[wiimote_number].calibrations.balance_board.kg34.bottom_left = calib[6] << 8 | calib[7];
+  }
   void capability_discoverer::handle_motionplus_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
   {
     u8 error_bit = reader.read_error_bit(data);
