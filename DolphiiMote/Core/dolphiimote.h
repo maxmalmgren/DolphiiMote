@@ -103,6 +103,9 @@ typedef struct dolphiimote_balance_board_sensor {
 typedef struct dolphiimote_balance_board
 {
 	dolphiimote_balance_board_sensor_raw raw;
+	dolphiimote_balance_board_sensor_raw calibration_kg0;
+	dolphiimote_balance_board_sensor_raw calibration_kg17;
+	dolphiimote_balance_board_sensor_raw calibration_kg34;
 	dolphiimote_balance_board_sensor kg;
 	dolphiimote_balance_board_sensor lb;
 	float weight_kg;

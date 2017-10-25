@@ -42,15 +42,17 @@ namespace dolphiimote { namespace serialization {
       return 3;
     }
 
+	float map(float value, float istart, float istop, float ostart, float ostop) {
+		return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
+	}
 	float interpolate(short sensor, short min, short mid, short max)
 	{
-		if (max == mid || mid == min)
+		if (max == mid || mid == min || sensor == 0)
 			return 0;
-
 		if (sensor < mid)
-			return ((float)(sensor - min) / (mid - min));
+			return map(sensor, min, mid, 0, 17);
 		else
-			return 68.0f * ((float)(sensor - mid) / (max - mid)) + 68.0f;
+			return map(sensor, mid, max, 17, 34);
 	}
 	void retrieve_balance_board(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
 	{
@@ -71,12 +73,31 @@ namespace dolphiimote { namespace serialization {
 			output.balance_board.lb.top_left = KG2LB * output.balance_board.kg.top_left;
 			output.balance_board.lb.bottom_left = KG2LB * output.balance_board.kg.bottom_left;
 
-			output.balance_board.weight_kg = (output.balance_board.kg.top_right + output.balance_board.kg.bottom_right + output.balance_board.kg.top_left + output.balance_board.kg.bottom_left) / 4.0f;
-			output.balance_board.weight_lb = (output.balance_board.lb.top_right + output.balance_board.lb.bottom_right + output.balance_board.lb.top_left + output.balance_board.lb.bottom_left) / 4.0f;
-			float Kx = (output.balance_board.raw.top_left + output.balance_board.raw.bottom_left) / (output.balance_board.raw.top_right + output.balance_board.raw.bottom_right);
-			float Ky = (output.balance_board.raw.top_left + output.balance_board.raw.top_right) / (output.balance_board.raw.bottom_left + output.balance_board.raw.bottom_right);
-			output.balance_board.center_of_gravity_x = ((float)(Kx - 1) / (float)(Kx + 1)) * (float)(-BSL / 2);
-			output.balance_board.center_of_gravity_y = ((float)(Ky - 1) / (float)(Ky + 1)) * (float)(-BSW / 2);
+			output.balance_board.calibration_kg0.top_right = state.calibrations.balance_board.kg0.top_right;
+			output.balance_board.calibration_kg0.bottom_right = state.calibrations.balance_board.kg0.bottom_right;
+			output.balance_board.calibration_kg0.top_left = state.calibrations.balance_board.kg0.top_left;
+			output.balance_board.calibration_kg0.bottom_left = state.calibrations.balance_board.kg0.bottom_left;
+
+			output.balance_board.calibration_kg17.top_right = state.calibrations.balance_board.kg17.top_right;
+			output.balance_board.calibration_kg17.bottom_right = state.calibrations.balance_board.kg17.bottom_right;
+			output.balance_board.calibration_kg17.top_left = state.calibrations.balance_board.kg17.top_left;
+			output.balance_board.calibration_kg17.bottom_left = state.calibrations.balance_board.kg17.bottom_left;
+
+			output.balance_board.calibration_kg34.top_right = state.calibrations.balance_board.kg34.top_right;
+			output.balance_board.calibration_kg34.bottom_right = state.calibrations.balance_board.kg34.bottom_right;
+			output.balance_board.calibration_kg34.top_left = state.calibrations.balance_board.kg34.top_left;
+			output.balance_board.calibration_kg34.bottom_left = state.calibrations.balance_board.kg34.bottom_left;
+
+			output.balance_board.weight_kg = (output.balance_board.kg.top_right + output.balance_board.kg.bottom_right + output.balance_board.kg.top_left + output.balance_board.kg.bottom_left);
+			output.balance_board.weight_lb = (output.balance_board.lb.top_right + output.balance_board.lb.bottom_right + output.balance_board.lb.top_left + output.balance_board.lb.bottom_left);
+			float right = (output.balance_board.raw.top_right + output.balance_board.raw.bottom_right);
+			float left = (output.balance_board.raw.top_left + output.balance_board.raw.bottom_left);
+			float top = (output.balance_board.raw.top_left + output.balance_board.raw.top_right);
+			float bot = (output.balance_board.raw.bottom_left + output.balance_board.raw.bottom_right);
+			float Kx = left/right;
+			float Ky = top/bot;
+			output.balance_board.center_of_gravity_x = ((float)(Kx - 1) / (float)(Kx + 1)) * (float)(BSL / 2);
+			output.balance_board.center_of_gravity_y = ((float)(Ky - 1) / (float)(Ky + 1)) * (float)(BSW / 2);
 		}
 	}
   void retrieve_motion_plus(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)

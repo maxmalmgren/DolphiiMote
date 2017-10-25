@@ -67,7 +67,7 @@ void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *d
   if(data -> button_state & dolphiimote_BUTTON_TWO)
     printf("Two ");
   if (data->valid_data_flags & dolphiimote_BALANCE_BOARD_VALID) {
-	  printf("Balance Board: Total: %02f, Top_Left: %02f, Top_Right: %02f, Bottom_Left: %02f, Bottom_Right: %02f", data->balance_board.weight_kg, data->balance_board.kg.top_left, data->balance_board.kg.top_right, data->balance_board.kg.bottom_left, data->balance_board.kg.bottom_right);
+	  printf("Balance Board: Total: %02f, COGX: %02f, COGY: %02f", data->balance_board.weight_kg, data->balance_board.center_of_gravity_x, data->balance_board.center_of_gravity_y);
   }
   if(data->valid_data_flags & dolphiimote_ACCELERATION_VALID)
     printf("Acc: %02d %02d %02d\t", data->acceleration.x, data->acceleration.y, data->acceleration.z);
