@@ -94,10 +94,21 @@ namespace dolphiimote { namespace serialization {
 			float left = (output.balance_board.raw.top_left + output.balance_board.raw.bottom_left);
 			float top = (output.balance_board.raw.top_left + output.balance_board.raw.top_right);
 			float bot = (output.balance_board.raw.bottom_left + output.balance_board.raw.bottom_right);
-			float Kx = left/right;
-			float Ky = top/bot;
-			output.balance_board.center_of_gravity_x = ((float)(Kx - 1) / (float)(Kx + 1)) * (float)(BSL / 2);
-			output.balance_board.center_of_gravity_y = ((float)(Ky - 1) / (float)(Ky + 1)) * (float)(BSW / 2);
+			if (left == 0 || right == 0) {
+				float Kx = left / right;
+				output.balance_board.center_of_gravity_x = ((float)(Kx - 1) / (float)(Kx + 1)) * (float)(BSL / 2);
+			} 
+			else {
+				output.balance_board.center_of_gravity_x = BSL/2;
+			}
+			if (left == 0 || right == 0) {
+				float Ky = top / bot;
+				output.balance_board.center_of_gravity_y = ((float)(Ky - 1) / (float)(Ky + 1)) * (float)(BSW / 2);
+			}
+			else {
+				output.balance_board.center_of_gravity_x = BSW / 2;
+			}
+			
 		}
 	}
   void retrieve_motion_plus(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
