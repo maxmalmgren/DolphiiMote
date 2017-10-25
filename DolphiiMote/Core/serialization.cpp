@@ -94,19 +94,25 @@ namespace dolphiimote { namespace serialization {
 			float left = (output.balance_board.raw.top_left + output.balance_board.raw.bottom_left);
 			float top = (output.balance_board.raw.top_left + output.balance_board.raw.top_right);
 			float bot = (output.balance_board.raw.bottom_left + output.balance_board.raw.bottom_right);
-			if (left == 0 || right == 0) {
-				output.balance_board.center_of_gravity_x = BSL / 2;
+			if (left == 0 || right == 0 || output.balance_board.weight_kg < 0) {
+				output.balance_board.center_of_gravity_pos_x = BSL / 2;
+				output.balance_board.center_of_gravity_x = 0;
 			} 
 			else {
 				float Kx = left / right;
-				output.balance_board.center_of_gravity_x = ((float)(Kx - 1) / (float)(Kx + 1)) * (float)(BSL);
+				float val = (Kx - 1) / (Kx + 1);
+				output.balance_board.center_of_gravity_x = (val - 0.5) * 100;
+				output.balance_board.center_of_gravity_pos_x = val * BSL;
 			}
-			if (top == 0 || bot == 0) {
-				output.balance_board.center_of_gravity_y = BSW / 2;
+			if (top == 0 || bot == 0 || output.balance_board.weight_kg < 0) {
+				output.balance_board.center_of_gravity_pos_y = BSW / 2;
+				output.balance_board.center_of_gravity_y = 0;
 			}
 			else {
 				float Ky = top / bot;
-				output.balance_board.center_of_gravity_y = ((float)(Ky - 1) / (float)(Ky + 1)) * (float)(BSW);
+				float val = (Ky - 1) / (Ky + 1);
+				output.balance_board.center_of_gravity_y = (val - 0.5) * 100;
+				output.balance_board.center_of_gravity_pos_y = val * BSW;
 			}
 			
 		}
