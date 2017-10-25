@@ -41,18 +41,23 @@ namespace dolphiimote { namespace serialization {
     {
       return 3;
     }
-
+	/**
+	* map value from istart, istop to ostart, ostop
+	*/
 	float map(float value, float istart, float istop, float ostart, float ostop) {
 		return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
 	}
-	float interpolate(short sensor, short min, short mid, short max)
+	/**
+	* interpolate a balance board sensor value between the three calibration values
+	*/
+	float interpolate_balance_board(short sensor, short kg0, short kg17, short kg34)
 	{
-		if (max == mid || mid == min || sensor == 0)
+		if (kg0 == kg17 || kg0 == kg34 || sensor == 0)
 			return 0;
-		if (sensor < mid)
-			return map(sensor, min, mid, 0, 17);
+		if (sensor < kg17)
+			return map(sensor, kg0, kg17, 0, 17);
 		else
-			return map(sensor, mid, max, 17, 34);
+			return map(sensor, kg17, kg34, 17, 34);
 	}
 	void retrieve_balance_board(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
 	{
@@ -63,10 +68,10 @@ namespace dolphiimote { namespace serialization {
 			output.balance_board.raw.bottom_right = extension_data[2] << 8 | extension_data[3];
 			output.balance_board.raw.top_left = extension_data[4] << 8 | extension_data[5];
 			output.balance_board.raw.bottom_left = extension_data[6] << 8 | extension_data[7];
-			output.balance_board.kg.top_right = interpolate(output.balance_board.raw.top_right, state.calibrations.balance_board.kg0.top_right, state.calibrations.balance_board.kg17.top_right, state.calibrations.balance_board.kg34.top_right);
-			output.balance_board.kg.bottom_right = interpolate(output.balance_board.raw.bottom_right, state.calibrations.balance_board.kg0.bottom_right, state.calibrations.balance_board.kg17.bottom_right, state.calibrations.balance_board.kg34.bottom_right);
-			output.balance_board.kg.top_left = interpolate(output.balance_board.raw.top_left, state.calibrations.balance_board.kg0.top_left, state.calibrations.balance_board.kg17.top_left, state.calibrations.balance_board.kg34.top_left);
-			output.balance_board.kg.bottom_left = interpolate(output.balance_board.raw.bottom_left, state.calibrations.balance_board.kg0.bottom_left, state.calibrations.balance_board.kg17.bottom_left, state.calibrations.balance_board.kg34.bottom_left);
+			output.balance_board.kg.top_right = interpolate_balance_board(output.balance_board.raw.top_right, state.calibrations.balance_board.kg0.top_right, state.calibrations.balance_board.kg17.top_right, state.calibrations.balance_board.kg34.top_right);
+			output.balance_board.kg.bottom_right = interpolate_balance_board(output.balance_board.raw.bottom_right, state.calibrations.balance_board.kg0.bottom_right, state.calibrations.balance_board.kg17.bottom_right, state.calibrations.balance_board.kg34.bottom_right);
+			output.balance_board.kg.top_left = interpolate_balance_board(output.balance_board.raw.top_left, state.calibrations.balance_board.kg0.top_left, state.calibrations.balance_board.kg17.top_left, state.calibrations.balance_board.kg34.top_left);
+			output.balance_board.kg.bottom_left = interpolate_balance_board(output.balance_board.raw.bottom_left, state.calibrations.balance_board.kg0.bottom_left, state.calibrations.balance_board.kg17.bottom_left, state.calibrations.balance_board.kg34.bottom_left);
 
 			output.balance_board.lb.top_right = KG2LB * output.balance_board.kg.top_right;
 			output.balance_board.lb.bottom_right = KG2LB * output.balance_board.kg.bottom_right;
