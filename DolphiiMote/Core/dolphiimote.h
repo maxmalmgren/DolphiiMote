@@ -110,8 +110,6 @@ typedef struct dolphiimote_balance_board
 	dolphiimote_balance_board_sensor lb;
 	float weight_kg;
 	float weight_lb;
-	float center_of_gravity_pos_x;
-	float center_of_gravity_pos_y;
 	float center_of_gravity_x;
 	float center_of_gravity_y;
 

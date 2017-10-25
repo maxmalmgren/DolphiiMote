@@ -18,11 +18,6 @@
 #include "serialization.h"
 #include "wiimote.h"
 namespace dolphiimote { namespace serialization {
-	// length between board sensors
-	const int BSL = 43;
-
-	// width between board sensors
-	const int BSW = 24;
 	const float KG2LB = 2.20462262f;
     std::array<u8, 23> _start_rumble = { 0xA2, 0x15, 0x01 };
     std::array<u8, 23> _stop_rumble = { 0xA2, 0x15, 0x00 };
@@ -95,30 +90,16 @@ namespace dolphiimote { namespace serialization {
 
 			output.balance_board.weight_kg = (output.balance_board.kg.top_right + output.balance_board.kg.bottom_right + output.balance_board.kg.top_left + output.balance_board.kg.bottom_left);
 			output.balance_board.weight_lb = (output.balance_board.lb.top_right + output.balance_board.lb.bottom_right + output.balance_board.lb.top_left + output.balance_board.lb.bottom_left);
-			float right = (output.balance_board.raw.top_right + output.balance_board.raw.bottom_right);
-			float left = (output.balance_board.raw.top_left + output.balance_board.raw.bottom_left);
-			float top = (output.balance_board.raw.top_left + output.balance_board.raw.top_right);
-			float bot = (output.balance_board.raw.bottom_left + output.balance_board.raw.bottom_right);
-			if (left == 0 || right == 0 || output.balance_board.weight_kg < 0) {
-				output.balance_board.center_of_gravity_pos_x = BSL / 2;
+			float right = (output.balance_board.kg.top_right + output.balance_board.kg.bottom_right);
+			float left = (output.balance_board.kg.top_left + output.balance_board.kg.bottom_left);
+			float top = (output.balance_board.kg.top_left + output.balance_board.kg.top_right);
+			float bot = (output.balance_board.kg.bottom_left + output.balance_board.kg.bottom_right); 
+			output.balance_board.center_of_gravity_x = (right - left) / 2;
+			output.balance_board.center_of_gravity_y = (bot - top) / 2;
+			if (output.balance_board.weight_kg < 0) {
 				output.balance_board.center_of_gravity_x = 0;
-			} 
-			else {
-				float Kx = left / right;
-				float val = (Kx - 1) / (Kx + 1);
-				output.balance_board.center_of_gravity_x = (val - 0.5) * 100;
-				output.balance_board.center_of_gravity_pos_x = val * BSL;
-			}
-			if (top == 0 || bot == 0 || output.balance_board.weight_kg < 0) {
-				output.balance_board.center_of_gravity_pos_y = BSW / 2;
 				output.balance_board.center_of_gravity_y = 0;
-			}
-			else {
-				float Ky = top / bot;
-				float val = (Ky - 1) / (Ky + 1);
-				output.balance_board.center_of_gravity_y = (val - 0.5) * 100;
-				output.balance_board.center_of_gravity_pos_y = val * BSW;
-			}
+			} 
 			
 		}
 	}
