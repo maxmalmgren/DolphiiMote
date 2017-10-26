@@ -35,12 +35,62 @@ namespace dolphiimote
     typedef enumeration<uint16_t> type;
     static const type None, MotionPlus, Extension, IR;
   };
+  class trigger_calibration {
+  public:
+	  u8 min;
+	  u8 max;
+  };
+  class stick_calibration {
+  public:
+	  u8 max_x;
+	  u8 min_x;
+	  u8 mid_X;
+	  u8 max_y;
+	  u8 min_y;
+	  u8 mid_y;
+  };
+  class accel_calibration {
+  public:
+	  u8 X0;
+	  u8 y0;
+	  u8 Z0;
+	  u8 XG;
+	  u8 YG;
+	  u8 ZG;
+  };
+  class calibration_classic_controller {
+  public:
+	  stick_calibration left_st;
+	  stick_calibration right_st;
+	  trigger_calibration left_tr;
+	  trigger_calibration right_tr;
+  };
+  class calibration_nunchuck {
+  public:
+	  accel_calibration accel;
+	  stick_calibration stick;
+  };
 
+  class calibration_balance_board 
+  {
+  public:
+	  dolphiimote_balance_board_sensor_raw kg0;
+	  dolphiimote_balance_board_sensor_raw kg17;
+	  dolphiimote_balance_board_sensor_raw kg34;
+  };
+  class wiimote_calibrations
+  {
+  public:
+	  calibration_balance_board balance_board;
+	  //calibration_classic_controller classic_controller;
+	  //calibration_nunchuck nunchuck;
+	  //accel_calibration wiimote;
+  };
   class wiimote_extensions
   { 
   public:
     typedef enumeration<uint32_t, 0> type;
-    static const type None, Nunchuck, ClassicController, ClassicControllerPro, GHGuitar, GHWorldTourDrums, MotionPlus;
+    static const type None, Nunchuck, ClassicController, ClassicControllerPro, GHGuitar, GHWorldTourDrums, MotionPlus, BalanceBoard;
   };
 
   class wiimote_data_handler
@@ -98,6 +148,7 @@ namespace dolphiimote
     u8 reporting_mode;
     u8 led_state;
     bool rumble_state;  
+	wiimote_calibrations calibrations;
   };
 
   class wiimote_message

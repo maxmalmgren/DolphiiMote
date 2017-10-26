@@ -22,19 +22,22 @@
 #include "Util\collections.h"
 #include "../Dolphin/CommonTypes.h"
 #include "dolphiimote.h"
+#include "wiimote.h"
 
 namespace dolphiimote { namespace serialization {
   const std::array<u8, 23>& start_rumble();
   const std::array<u8, 23>& stop_rumble();
   size_t rumble_size();
-  void retrieve_motion_plus(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output);
-  void retrieve_nunchuck(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output);
-  void retrieve_interleaved_nunchuck(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output);
+  void retrieve_motion_plus(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
+  void retrieve_nunchuck(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
+  void retrieve_interleaved_nunchuck(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
   void retrieve_button_state(u8 reporting_mode, checked_array<const u8> data, dolphiimote_wiimote_data &output);
   void retrieve_infrared_camera_data(u8 reporting_mode, checked_array<const u8> data, dolphiimote_wiimote_data &output);
   void retrieve_acceleration_data(u8 reporting_mode, checked_array<const u8> data, struct dolphiimote_wiimote_data &output);
-  void retrieve_classic_controller(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output);
-  void retrieve_interleaved_classic_controller(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output);
+  void retrieve_classic_controller(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
+  void retrieve_interleaved_classic_controller(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
+  void retrieve_guitar(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
+  void retrieve_balance_board(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
   }
 }
 

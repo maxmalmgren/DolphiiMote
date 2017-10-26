@@ -66,10 +66,12 @@ void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *d
     printf("One ");
   if(data -> button_state & dolphiimote_BUTTON_TWO)
     printf("Two ");
-
+  if (data->valid_data_flags & dolphiimote_BALANCE_BOARD_VALID) {
+	  printf("Balance Board: Total: %02f, COGX: %02f, COGY: %02f", data->balance_board.weight_kg, data->balance_board.center_of_gravity_x, data->balance_board.center_of_gravity_y);
+  }
   if(data->valid_data_flags & dolphiimote_ACCELERATION_VALID)
     printf("Acc: %02d %02d %02d\t", data->acceleration.x, data->acceleration.y, data->acceleration.z);
-
+  
   if(data->valid_data_flags & dolphiimote_MOTIONPLUS_VALID)
     printf("Motion Plus: %04X%04X%04X\t", data->motionplus.yaw_down_speed, data->motionplus.pitch_left_speed, data->motionplus.roll_left_speed);
 
@@ -79,7 +81,21 @@ void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *d
     int z = data->nunchuck.buttons & dolphiimote_NUNCHUCK_BUTTON_Z;
     printf("Nunchuck: C: %i, Z: %i, Acc: %02X%02X%02X Stick X: %i, Y: %i\t", c, z, data->nunchuck.x, data->nunchuck.y, data->nunchuck.z, data->nunchuck.stick_x, data->nunchuck.stick_y);
   }
+  if (data->valid_data_flags & dolphiimote_GUITAR_VALID)
+  {
 
+	  printf("Guitar: %02d %02d %02d %02d\t", data->guitar.stick_x, data->guitar.stick_y, data->guitar.is_gh3, data->guitar.buttons);
+	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_Green)
+		  printf("Green\t");
+	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_RED)
+		  printf("Red\t");
+	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_YELLOW)
+		  printf("Yellow\t");
+	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_BLUE)
+		  printf("Blue\t");
+	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_ORANGE)
+		  printf("Orange\t");
+  }
   if(data->valid_data_flags & dolphiimote_CLASSIC_CONTROLLER_VALID)
   {
 

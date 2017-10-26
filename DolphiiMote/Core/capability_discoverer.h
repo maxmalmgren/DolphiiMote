@@ -42,6 +42,10 @@ namespace dolphiimote
     virtual void handle_status_report(int wiimote_number, checked_array<const u8> data);
     virtual void update_extension_type_from_id(int wiimote_number);
     virtual void handle_extension_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
+	virtual void handle_balanceboard_calibration1(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
+	virtual void handle_balanceboard_calibration2(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
+	virtual void handle_nunchuck_calibration(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
+	virtual void handle_classic_controller_calibration(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
     virtual void handle_motionplus_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
     virtual void init_and_identify_extension_controller(int wiimote_number);
     virtual void send_extension_id_read_message(int wiimote_number);

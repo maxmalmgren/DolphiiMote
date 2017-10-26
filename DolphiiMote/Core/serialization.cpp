@@ -16,8 +16,9 @@
 // along with DolphiiMote.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "serialization.h"
+#include "wiimote.h"
 namespace dolphiimote { namespace serialization {
-
+	const float KG2LB = 2.20462262f;
     std::array<u8, 23> _start_rumble = { 0xA2, 0x15, 0x01 };
     std::array<u8, 23> _stop_rumble = { 0xA2, 0x15, 0x00 };
 
@@ -35,8 +36,74 @@ namespace dolphiimote { namespace serialization {
     {
       return 3;
     }
+	/**
+	* map value from istart, istop to ostart, ostop
+	*/
+	float map(float value, float istart, float istop, float ostart, float ostop) {
+		return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
+	}
+	/**
+	* interpolate a balance board sensor value between the three calibration values
+	*/
+	float interpolate_balance_board(short sensor, short kg0, short kg17, short kg34)
+	{
+		if (kg0 == kg17 || kg0 == kg34 || sensor == 0)
+			return 0;
+		if (sensor < kg17)
+			return map(sensor, kg0, kg17, 0, 17);
+		else
+			return map(sensor, kg17, kg34, 17, 34);
+	}
+	void retrieve_balance_board(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
+	{
+		if (extension_data.size() >= 8)
+		{
+			output.valid_data_flags |= dolphiimote_BALANCE_BOARD_VALID;
+			output.balance_board.raw.top_right = extension_data[0] << 8 | extension_data[1];
+			output.balance_board.raw.bottom_right = extension_data[2] << 8 | extension_data[3];
+			output.balance_board.raw.top_left = extension_data[4] << 8 | extension_data[5];
+			output.balance_board.raw.bottom_left = extension_data[6] << 8 | extension_data[7];
+			output.balance_board.kg.top_right = interpolate_balance_board(output.balance_board.raw.top_right, state.calibrations.balance_board.kg0.top_right, state.calibrations.balance_board.kg17.top_right, state.calibrations.balance_board.kg34.top_right);
+			output.balance_board.kg.bottom_right = interpolate_balance_board(output.balance_board.raw.bottom_right, state.calibrations.balance_board.kg0.bottom_right, state.calibrations.balance_board.kg17.bottom_right, state.calibrations.balance_board.kg34.bottom_right);
+			output.balance_board.kg.top_left = interpolate_balance_board(output.balance_board.raw.top_left, state.calibrations.balance_board.kg0.top_left, state.calibrations.balance_board.kg17.top_left, state.calibrations.balance_board.kg34.top_left);
+			output.balance_board.kg.bottom_left = interpolate_balance_board(output.balance_board.raw.bottom_left, state.calibrations.balance_board.kg0.bottom_left, state.calibrations.balance_board.kg17.bottom_left, state.calibrations.balance_board.kg34.bottom_left);
 
-  void retrieve_motion_plus(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output)
+			output.balance_board.lb.top_right = KG2LB * output.balance_board.kg.top_right;
+			output.balance_board.lb.bottom_right = KG2LB * output.balance_board.kg.bottom_right;
+			output.balance_board.lb.top_left = KG2LB * output.balance_board.kg.top_left;
+			output.balance_board.lb.bottom_left = KG2LB * output.balance_board.kg.bottom_left;
+
+			output.balance_board.calibration_kg0.top_right = state.calibrations.balance_board.kg0.top_right;
+			output.balance_board.calibration_kg0.bottom_right = state.calibrations.balance_board.kg0.bottom_right;
+			output.balance_board.calibration_kg0.top_left = state.calibrations.balance_board.kg0.top_left;
+			output.balance_board.calibration_kg0.bottom_left = state.calibrations.balance_board.kg0.bottom_left;
+
+			output.balance_board.calibration_kg17.top_right = state.calibrations.balance_board.kg17.top_right;
+			output.balance_board.calibration_kg17.bottom_right = state.calibrations.balance_board.kg17.bottom_right;
+			output.balance_board.calibration_kg17.top_left = state.calibrations.balance_board.kg17.top_left;
+			output.balance_board.calibration_kg17.bottom_left = state.calibrations.balance_board.kg17.bottom_left;
+
+			output.balance_board.calibration_kg34.top_right = state.calibrations.balance_board.kg34.top_right;
+			output.balance_board.calibration_kg34.bottom_right = state.calibrations.balance_board.kg34.bottom_right;
+			output.balance_board.calibration_kg34.top_left = state.calibrations.balance_board.kg34.top_left;
+			output.balance_board.calibration_kg34.bottom_left = state.calibrations.balance_board.kg34.bottom_left;
+
+			output.balance_board.weight_kg = (output.balance_board.kg.top_right + output.balance_board.kg.bottom_right + output.balance_board.kg.top_left + output.balance_board.kg.bottom_left);
+			output.balance_board.weight_lb = (output.balance_board.lb.top_right + output.balance_board.lb.bottom_right + output.balance_board.lb.top_left + output.balance_board.lb.bottom_left);
+			float right = (output.balance_board.kg.top_right + output.balance_board.kg.bottom_right);
+			float left = (output.balance_board.kg.top_left + output.balance_board.kg.bottom_left);
+			float top = (output.balance_board.kg.top_left + output.balance_board.kg.top_right);
+			float bot = (output.balance_board.kg.bottom_left + output.balance_board.kg.bottom_right); 
+			output.balance_board.center_of_gravity_x = (right - left) / 2;
+			output.balance_board.center_of_gravity_y = (bot - top) / 2;
+			if (output.balance_board.weight_kg < 0) {
+				output.balance_board.center_of_gravity_x = 0;
+				output.balance_board.center_of_gravity_y = 0;
+			} 
+			
+		}
+	}
+  void retrieve_motion_plus(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
   {
     u8 speed_mask = ~0x03;
 
@@ -53,7 +120,7 @@ namespace dolphiimote { namespace serialization {
     }
   }
 
-  void retrieve_nunchuck(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output)
+  void retrieve_nunchuck(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
   {
     if(extension_data.size() >= 6)
     {    
@@ -69,7 +136,7 @@ namespace dolphiimote { namespace serialization {
     }
   }
 
-  void retrieve_interleaved_nunchuck(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output)
+  void retrieve_interleaved_nunchuck(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
   {
     if(extension_data.size() >= 6 && !(extension_data[5] & 0x03))
     {    
@@ -85,7 +152,7 @@ namespace dolphiimote { namespace serialization {
     }
   }
 
-  void retrieve_classic_controller(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output)
+  void retrieve_classic_controller(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
   {
 	  if(extension_data.size() >= 6)
     { 	  
@@ -104,7 +171,21 @@ namespace dolphiimote { namespace serialization {
     }
   }
 
-  void retrieve_interleaved_classic_controller(checked_array<const u8> extension_data, dolphiimote_wiimote_data &output)
+  void retrieve_guitar(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
+  {
+	  if (extension_data.size() >= 6)
+	  {
+		  output.valid_data_flags |= dolphiimote_GUITAR_VALID;
+
+		  output.guitar.is_gh3 = (extension_data[0] & 0x80) == 0x80;
+		  output.guitar.stick_x = extension_data[0] & 0x3F;
+		  output.guitar.stick_y = extension_data[1] & 0x3F;
+		  output.guitar.tap_bar = extension_data[2] & 0x1F;
+		  output.guitar.whammy_bar = extension_data[3] & 0x1F;
+		  output.guitar.buttons = ~((extension_data[4] << 8) | extension_data[5]);
+	  }
+  }
+  void retrieve_interleaved_classic_controller(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
   {
 	  if(extension_data.size() >= 6)
     {

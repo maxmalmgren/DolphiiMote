@@ -19,7 +19,7 @@
 #include "serialization.h"
 
 namespace dolphiimote {
-    std::vector<std::pair<std::function<bool(const wiimote&)>, std::function<void(checked_array<const u8>, dolphiimote_wiimote_data&)>>> extension_retrievers;
+    std::vector<std::pair<std::function<bool(const wiimote&)>, std::function<void(checked_array<const u8>, wiimote state, dolphiimote_wiimote_data&)>>> extension_retrievers;
     std::vector<std::pair<u16, std::function<void(u8, checked_array<const u8>, dolphiimote_wiimote_data&)>>> standard_retrievers;
     std::map<u16, range> reporting_mode_extension_data_offset;
     bool init;
@@ -33,6 +33,14 @@ namespace dolphiimote {
     {
       return [=](const wiimote& mote) { return is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus); };
     }
+	std::function<bool(const wiimote&)> balance_board_filter()
+	{
+		return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::BalanceBoard)(mote) && !motion_plus_filter()(mote); };
+	}
+	std::function<bool(const wiimote&)> guitar_filter()
+	{
+		return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::GHGuitar)(mote) && !motion_plus_filter()(mote); };
+	}
 
     std::function<bool(const wiimote&)> nunchuck_filter()
     {
@@ -46,12 +54,12 @@ namespace dolphiimote {
 
     std::function<bool(const wiimote&)> classic_controller_filter()
     {
-      return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::ClassicController)(mote) && !motion_plus_filter()(mote); };
+      return [=](const wiimote& mote) { return (standard_extension_filter(wiimote_extensions::ClassicControllerPro)(mote) || standard_extension_filter(wiimote_extensions::ClassicController)(mote)) && !motion_plus_filter()(mote); };
     }
 
     std::function<bool(const wiimote&)> interleaved_classic_controller_filter()
     {
-      return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::ClassicController)(mote) && motion_plus_filter()(mote); };
+      return [=](const wiimote& mote) { return (standard_extension_filter(wiimote_extensions::ClassicControllerPro)(mote) || standard_extension_filter(wiimote_extensions::ClassicController)(mote)) && motion_plus_filter()(mote); };
     }
 
     void setup_retrievers()
@@ -65,6 +73,8 @@ namespace dolphiimote {
       extension_retrievers.push_back(std::make_pair(interleaved_nunchuck_filter(), serialization::retrieve_interleaved_nunchuck));
       extension_retrievers.push_back(std::make_pair(classic_controller_filter(), serialization::retrieve_classic_controller));
       extension_retrievers.push_back(std::make_pair(interleaved_classic_controller_filter(), serialization::retrieve_interleaved_classic_controller));
+	  extension_retrievers.push_back(std::make_pair(guitar_filter(), serialization::retrieve_guitar));
+	  extension_retrievers.push_back(std::make_pair(balance_board_filter(), serialization::retrieve_balance_board));
     }
 
     void setup_extension_offsets()
@@ -101,7 +111,7 @@ namespace dolphiimote {
 
       auto applicable_standard_retrievers = pair_filter(standard_retrievers, filter);
       for(auto& retriever : take_second(applicable_standard_retrievers))
-        retriever(reporting_mode, data, wiimote_data);
+        retriever(reporting_mode, data,  wiimote_data);
     }
 
     void retrieve_extension_data(int wiimote_number, wiimote& state, checked_array<const u8> data, dolphiimote_wiimote_data &output)
@@ -110,7 +120,7 @@ namespace dolphiimote {
 
       for(auto & pair : extension_retrievers)
         if(pair.first(state))
-          pair.second(data, output);
+          pair.second(data, state, output);
     }
 
     void data_reporter::handle_data_reporting(dolphiimote_callbacks &callbacks, int wiimote_number, u8 reporting_mode, checked_array<const u8> data)
