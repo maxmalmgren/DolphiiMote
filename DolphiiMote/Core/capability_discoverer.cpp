@@ -19,12 +19,25 @@
 
 namespace dolphiimote {
 
+	bool passthrough_mode(wiimote &mote)
+	{
+		return is_set(mote.enabled_capabilities, wiimote_capabilities::Extension | wiimote_capabilities::MotionPlus);
+	}
 	void capability_discoverer::data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data)
 	{
+		auto& mote = wiimote_states[wiimote_number];
 		u8 message_type = data[1];
 
 		if (message_type == 0x20)
 			handle_status_report(wiimote_number, data);
+
+		if (!is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
+			mote.enabled_capabilities &= ~wiimote_capabilities::Extension;
+			mote.set_extension_disabled();
+		} else if (mote.extension_id == 0) {
+			enable_only_extension(wiimote_number);
+			mote.extension_id = 0xFFFFFFFFFFFF;
+		}
 	}
 
 	bool can_unobstrusively_enable_extension(const wiimote& mote)
@@ -36,7 +49,6 @@ namespace dolphiimote {
 	{
 		auto& mote = wiimote_states[wiimote];
 
-		mote.available_capabilities |= wiimote_capabilities::Extension;
 		if (can_unobstrusively_enable_extension(mote))
 			init_and_identify_extension_controller(wiimote);
 	}
@@ -46,12 +58,6 @@ namespace dolphiimote {
 		auto& mote = wiimote_states[wiimote];
 
 		mote.available_capabilities &= ~wiimote_capabilities::Extension;
-		mote.set_extension_disabled();
-	}
-
-	bool passthrough_mode(wiimote &mote)
-	{
-		return is_set(mote.enabled_capabilities, wiimote_capabilities::Extension | wiimote_capabilities::MotionPlus);
 	}
 
 	void capability_discoverer::handle_extension_controller_changed(bool extension_controller_connected, int wiimote, bool& changed)
@@ -166,48 +172,48 @@ namespace dolphiimote {
 
 	void capability_discoverer::handle_extension_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
 	{
+		auto& mote = wiimote_states[wiimote_number];
 		u8 error_bit = reader.read_error_bit(data);
 		checked_array<const u8> extension_id = data.sub_array(7, 6);
 
 		if (error_bit == 0 && data.valid())
 		{
 			u64 id = read_extension_id(extension_id);
-			//When we get a passthrough id, don't override any settings!
-			if (!(get_type_from_id(id) == wiimote_extensions::Passthrough)) {
-				wiimote_states[wiimote_number].extension_id = id;
+			//When we get a passthrough id, don't override the current extension id!
+			if (get_type_from_id(id) == wiimote_extensions::Passthrough) {
+				mote.enabled_capabilities |= wiimote_capabilities::Extension;
+				mote.enabled_capabilities |= wiimote_capabilities::MotionPlus;
+			}
+			else {
+				mote.extension_id = id;
 				if (id == 0x0100A4200405)
 				{
-					wiimote_states[wiimote_number].enabled_capabilities &= ~wiimote_capabilities::Extension;
-					wiimote_states[wiimote_number].enabled_capabilities |= wiimote_capabilities::MotionPlus;
+					mote.enabled_capabilities &= ~wiimote_capabilities::Extension;
+					mote.enabled_capabilities |= wiimote_capabilities::MotionPlus;
 				}
 				else
 				{
-					wiimote_states[wiimote_number].enabled_capabilities |= wiimote_capabilities::Extension;
-					wiimote_states[wiimote_number].available_capabilities |= wiimote_capabilities::Extension;
+					mote.enabled_capabilities |= wiimote_capabilities::Extension;
+					mote.available_capabilities |= wiimote_capabilities::Extension;
 				}
-			}
-			else {
-				wiimote_states[wiimote_number].enabled_capabilities |= wiimote_capabilities::Extension;
-				wiimote_states[wiimote_number].enabled_capabilities |= wiimote_capabilities::MotionPlus;
 			}
 		}
 		else
 		{
-			wiimote_states[wiimote_number].extension_id = 0;
-			wiimote_states[wiimote_number].enabled_capabilities &= ~wiimote_capabilities::Extension;
+			mote.extension_id = 0;
+			mote.enabled_capabilities &= ~wiimote_capabilities::Extension;
 		}
 		update_extension_type_from_id(wiimote_number);
 		dispatch_capabilities_changed(wiimote_number, callbacks);
-
-		if (wiimote_states[wiimote_number].extension_type == wiimote_extensions::BalanceBoard) {
+		if (mote.extension_type == wiimote_extensions::BalanceBoard) {
 			reader.read(wiimote_number, 0xA40024, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 			reader.read(wiimote_number, 0xA40024 + 16, 8, std::bind(&capability_discoverer::handle_balanceboard_calibration2, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 		}
 		//Appearently calibration data is stored for joysticks and things, but this is probably a pointless thing to bother calibrating for.
-		/*if (wiimote_states[wiimote_number].extension_type == wiimote_extensions::Nunchuck) {
+		/*if (mote.extension_type == wiimote_extensions::Nunchuck) {
 			reader.read(wiimote_number, 0xA40020, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 		}
-		if (wiimote_states[wiimote_number].extension_type == wiimote_extensions::ClassicController || wiimote_states[wiimote_number].extension_type == wiimote_extensions::ClassicControllerPro) {
+		if (mote.extension_type == wiimote_extensions::ClassicController || mote.extension_type == wiimote_extensions::ClassicControllerPro) {
 			reader.read(wiimote_number, 0xA40020, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 		}*/
 	}

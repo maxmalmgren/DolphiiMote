@@ -33,6 +33,7 @@ namespace dolphiimote {
     {
       return [=](const wiimote& mote) { return is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus); };
     }
+
 	std::function<bool(const wiimote&)> balance_board_filter()
 	{
 		return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::BalanceBoard)(mote) && !motion_plus_filter()(mote); };
@@ -116,11 +117,18 @@ namespace dolphiimote {
 
     void retrieve_extension_data(int wiimote_number, wiimote& state, checked_array<const u8> data, dolphiimote_wiimote_data &output)
     {
-      wiimote_extensions::type enabled_extension = state.extension_type;
-
       for(auto & pair : extension_retrievers)
         if(pair.first(state))
           pair.second(data, state, output);
+
+	  if (output.valid_data_flags & dolphiimote_MOTIONPLUS_VALID) {
+		  if (output.motionplus.extension_connected) {
+			  state.available_capabilities |= wiimote_capabilities::Extension;
+		  }
+		  else {
+			  state.available_capabilities &= ~wiimote_capabilities::Extension;
+		  }
+	  }
     }
 
     void data_reporter::handle_data_reporting(dolphiimote_callbacks &callbacks, int wiimote_number, u8 reporting_mode, checked_array<const u8> data)
