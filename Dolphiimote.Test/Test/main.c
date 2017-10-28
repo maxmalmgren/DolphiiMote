@@ -102,7 +102,7 @@ void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *d
 		  printf("Acc: %02d %02d %02d\t", data->acceleration.x, data->acceleration.y, data->acceleration.z);
 
 	  if (data->valid_data_flags & dolphiimote_MOTIONPLUS_VALID)
-		  printf("Motion Plus: %04X%04X%04X\t", data->motionplus.yaw_down_speed, data->motionplus.pitch_left_speed, data->motionplus.roll_left_speed);
+		  printf("Motion Plus: %04X %04X %04X, Extension connected: %d\t", data->motionplus.yaw_down_speed, data->motionplus.pitch_left_speed, data->motionplus.roll_left_speed, data->motionplus.extension_connected);
 
 	  if (data->valid_data_flags & dolphiimote_NUNCHUCK_VALID)
 	  {
@@ -113,8 +113,10 @@ void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *d
 
     if (data->valid_data_flags & dolphiimote_GUITAR_VALID)
     {
-  	  printf("Guitar: %02d %02d %02d %02d\t", data->guitar.stick_x, data->guitar.stick_y, data->guitar.is_gh3, data->guitar.buttons);
-  	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_Green)
+  	  printf("Guitar: %02d %02d %02d\t", data->guitar.stick_x, data->guitar.stick_y, data->guitar.whammy_bar);
+	  if (data->guitar.is_gh3)
+		  printf("Guitar hero three controller\t");
+  	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_GREEN)
   		  printf("Green\t");
   	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_RED)
   		  printf("Red\t");
@@ -124,6 +126,15 @@ void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *d
   		  printf("Blue\t");
   	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_ORANGE)
   		  printf("Orange\t");
+
+	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_PLUS)
+		  printf("+\t");
+	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_MINUS)
+		  printf("-\t");
+	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_STRUM_UP)
+		  printf("Strum Down\t");
+	  if (data->guitar.buttons & dolphiimote_GUITAR_BUTTON_STRUM_DOWN)
+		  printf("Strum Up\t");
     }
 
 	  if (data->valid_data_flags & dolphiimote_CLASSIC_CONTROLLER_VALID)
@@ -187,6 +198,7 @@ void on_capabilities_changed(uint8_t wiimote, dolphiimote_capability_status *sta
   switch(status->extension_type)
   {
     case dolphiimote_EXTENSION_NONE:
+		state = 0 + 10 * wiimote;
       printf("None");
       break;
     case dolphiimote_EXTENSION_NUNCHUCK:

@@ -30,15 +30,13 @@ namespace dolphiimote {
 
 		if (message_type == 0x20)
 			handle_status_report(wiimote_number, data);
-		if (is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus)) {
-			if (!mote.extension_motion_plus_state && is_set(mote.enabled_capabilities, wiimote_capabilities::Extension)) {
-				mote.available_capabilities &= ~wiimote_capabilities::Extension;
-				enable_motion_plus_no_passthrough(wiimote_number);
-			}
-			if (mote.extension_motion_plus_state && !is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
-				mote.available_capabilities |= wiimote_capabilities::Extension;
-				enable_only_extension(wiimote_number);
-			}
+
+		if (!mote.extension_motion_plus_state && is_set(mote.available_capabilities, wiimote_capabilities::MotionPlus)) {
+			mote.available_capabilities &= ~wiimote_capabilities::Extension;
+			mote.enabled_capabilities &= ~wiimote_capabilities::Extension;
+			mote.extension_motion_plus_state = true;
+			dispatch_capabilities_changed(wiimote_number, callbacks);
+			enable_only_extension(wiimote_number);
 		}
 	}
 
