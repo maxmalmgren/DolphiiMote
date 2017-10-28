@@ -90,7 +90,7 @@ namespace dolphiimote
   { 
   public:
     typedef enumeration<uint32_t, 0> type;
-    static const type None, Nunchuck, ClassicController, ClassicControllerPro, GHGuitar, GHWorldTourDrums, MotionPlus, BalanceBoard;
+    static const type None, Nunchuck, ClassicController, ClassicControllerPro, GHGuitar, GHWorldTourDrums, MotionPlus, Passthrough, BalanceBoard;
   };
 
   class wiimote_data_handler
