@@ -314,10 +314,11 @@ namespace dolphiimote {
 		sender.write_register(wiimote_number, 0xA400F0, 0x55, 1);
 		sender.write_register(wiimote_number, 0xA400FB, 0x00, 1);
 		sender.write_register(wiimote_number, 0xA600F0, 0x55, 1);
-
-		if (wiimote_states[wiimote_number].extension_type == (dolphiimote_EXTENSION_CLASSIC_CONTROLLER
-			| dolphiimote_EXTENSION_CLASSIC_CONTROLLER_PRO | dolphiimote_EXTENSION_GUITAR_HERO_GUITAR
-			| dolphiimote_EXTENSION_GUITAR_HERO_WORLD_TOUR_DRUMS))
+		if ((wiimote_states[wiimote_number].extension_type & 
+			(wiimote_extensions::ClassicController |
+				wiimote_extensions::ClassicControllerPro |
+				wiimote_extensions::GHGuitar |
+				wiimote_extensions::GHWorldTourDrums)) == wiimote_states[wiimote_number].extension_type)
 			sender.write_register(wiimote_number, 0xA600FE, 0x07, 1, std::bind(&capability_discoverer::send_extension_id_read_message, this, std::placeholders::_1));
 		else
 			sender.write_register(wiimote_number, 0xA600FE, 0x05, 1, std::bind(&capability_discoverer::send_extension_id_read_message, this, std::placeholders::_1));

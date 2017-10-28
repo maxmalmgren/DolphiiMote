@@ -37,6 +37,7 @@ namespace dolphiimote { namespace serialization {
   void retrieve_classic_controller(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
   void retrieve_interleaved_classic_controller(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
   void retrieve_guitar(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
+  void retrieve_interleaved_guitar(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
   void retrieve_balance_board(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output);
   }
 }

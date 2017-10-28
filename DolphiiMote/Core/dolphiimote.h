@@ -295,7 +295,7 @@ dolphiimote_GUITAR_BUTTON_* are the Classic Controller buttons, as they are save
 #define dolphiimote_GUITAR_BUTTON_STRUM_DOWN 0x4000
 #define dolphiimote_GUITAR_BUTTON_STRUM_UP 0x0001
 
-#define dolphiimote_GUITAR_BUTTON_Green 0x0010
+#define dolphiimote_GUITAR_BUTTON_GREEN 0x0010
 #define dolphiimote_GUITAR_BUTTON_RED 0x0040
 #define dolphiimote_GUITAR_BUTTON_YELLOW 0x0008
 #define dolphiimote_GUITAR_BUTTON_BLUE 0x0020

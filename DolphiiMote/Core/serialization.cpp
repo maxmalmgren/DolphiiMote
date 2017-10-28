@@ -172,6 +172,27 @@ namespace dolphiimote { namespace serialization {
     }
   }
 
+  void retrieve_interleaved_classic_controller(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
+  {
+	  if (extension_data.size() >= 6)
+	  {
+		  if ((extension_data[5] & 0x03) == 0)
+		  {
+			  output.valid_data_flags |= dolphiimote_CLASSIC_CONTROLLER_VALID;
+
+			  output.classic_controller.left_stick_x = extension_data[0] & 0x3E;
+			  output.classic_controller.left_stick_y = extension_data[1] & 0x3E;
+
+			  output.classic_controller.right_stick_x = ((extension_data[0] & 0xC0) >> 3) | ((extension_data[1] & 0xC0) >> 5) | ((extension_data[2] & 0xC0) >> 7);
+			  output.classic_controller.right_stick_y = extension_data[2] & 0x1F;
+
+			  output.classic_controller.left_trigger = ((extension_data[2] & 0x60) >> 2) | ((extension_data[3] & 0xE0) >> 5);
+			  output.classic_controller.right_trigger = extension_data[3] & 0x1F;
+
+			  output.classic_controller.buttons = ~(((extension_data[4] & 0xFE) << 8) | (extension_data[5] & 0xFC) | ((extension_data[1] & 0x01) << 1) | (extension_data[0] & 0x01));
+		  }
+	  }
+  }
   void retrieve_guitar(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
   {
 	  if (extension_data.size() >= 6)
@@ -186,28 +207,23 @@ namespace dolphiimote { namespace serialization {
 		  output.guitar.buttons = ~((extension_data[4] << 8) | extension_data[5]);
 	  }
   }
-  void retrieve_interleaved_classic_controller(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
+
+  void retrieve_interleaved_guitar(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
   {
-	  if(extension_data.size() >= 6)
-    {
-      if((extension_data[5] & 0x03) == 0)
-      {
-        output.valid_data_flags |= dolphiimote_CLASSIC_CONTROLLER_VALID;
-
-        output.classic_controller.left_stick_x = extension_data[0] & 0x3E;
-        output.classic_controller.left_stick_y = extension_data[1] & 0x3E;
-
-        output.classic_controller.right_stick_x = ((extension_data[0] & 0xC0) >> 3) | ((extension_data[1] & 0xC0) >> 5) | ((extension_data[2] & 0xC0) >> 7);
-        output.classic_controller.right_stick_y = extension_data[2] & 0x1F;
-
-        output.classic_controller.left_trigger = ((extension_data[2] & 0x60) >> 2) | ((extension_data[3] & 0xE0) >> 5);
-        output.classic_controller.right_trigger = extension_data[3] & 0x1F;
-
-        output.classic_controller.buttons = ~(((extension_data[4] & 0xFE ) << 8) | (extension_data[5] & 0xFC) | ((extension_data[1] & 0x01) << 1) | (extension_data[0] & 0x01));
-      }
-    }
+	  if (extension_data.size() >= 6)
+	  {
+		  if ((extension_data[5] & 0x03) == 0)
+		  {
+			  output.valid_data_flags |= dolphiimote_GUITAR_VALID;
+			  output.guitar.stick_x = extension_data[0] & 0x3E;
+			  output.guitar.stick_y = extension_data[1] & 0x3E;
+			  output.guitar.is_gh3 = (extension_data[0] & 0x80) == 0x80;
+			  output.guitar.tap_bar = extension_data[2] & 0x1F;
+			  output.guitar.whammy_bar = extension_data[3] & 0x1F;
+			  output.guitar.buttons = ~(((extension_data[4] & 0xFE) << 8) | (extension_data[5] & 0xFC) | ((extension_data[1] & 0x01) << 1) | (extension_data[0] & 0x01));
+		  }
+	  }
   }
-
   void retrieve_button_state(u8 reporting_mode, checked_array<const u8> data, dolphiimote_wiimote_data &output)
   {
     if(data.size() > 4)

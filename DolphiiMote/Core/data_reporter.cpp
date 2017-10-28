@@ -42,6 +42,10 @@ namespace dolphiimote {
 	{
 		return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::GHGuitar)(mote) && !motion_plus_filter()(mote); };
 	}
+	std::function<bool(const wiimote&)> interleaved_guitar_filter()
+	{
+		return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::GHGuitar)(mote) && motion_plus_filter()(mote); };
+	}
 
     std::function<bool(const wiimote&)> nunchuck_filter()
     {
@@ -75,6 +79,7 @@ namespace dolphiimote {
       extension_retrievers.push_back(std::make_pair(classic_controller_filter(), serialization::retrieve_classic_controller));
       extension_retrievers.push_back(std::make_pair(interleaved_classic_controller_filter(), serialization::retrieve_interleaved_classic_controller));
 	  extension_retrievers.push_back(std::make_pair(guitar_filter(), serialization::retrieve_guitar));
+	  extension_retrievers.push_back(std::make_pair(interleaved_guitar_filter(), serialization::retrieve_interleaved_guitar));
 	  extension_retrievers.push_back(std::make_pair(balance_board_filter(), serialization::retrieve_balance_board));
     }
 
