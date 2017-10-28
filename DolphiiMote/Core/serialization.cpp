@@ -106,9 +106,10 @@ namespace dolphiimote { namespace serialization {
   void retrieve_motion_plus(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
   {
     u8 speed_mask = ~0x03;
-
-    if(extension_data.size() >= 6 && (extension_data[5] & 0x02))
+	//If extension 5 has the first bit set, its invalid.
+    if(extension_data.size() >= 6 && (extension_data[5] & 0x02) && !(extension_data[5] & 0x01))
     {
+		
       output.valid_data_flags |= dolphiimote_MOTIONPLUS_VALID;
 
       output.motionplus.yaw_down_speed = extension_data[0] + ((u16)(extension_data[3] & speed_mask) << 6);

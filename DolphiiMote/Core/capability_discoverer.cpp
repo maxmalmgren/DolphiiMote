@@ -30,13 +30,15 @@ namespace dolphiimote {
 
 		if (message_type == 0x20)
 			handle_status_report(wiimote_number, data);
-
-		if (!is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
-			mote.enabled_capabilities &= ~wiimote_capabilities::Extension;
-			mote.set_extension_disabled();
-		} else if (mote.extension_id == 0) {
-			enable_only_extension(wiimote_number);
-			mote.extension_id = 0xFFFFFFFFFFFF;
+		if (is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus)) {
+			if (!mote.extension_motion_plus_state && is_set(mote.enabled_capabilities, wiimote_capabilities::Extension)) {
+				mote.available_capabilities &= ~wiimote_capabilities::Extension;
+				enable_motion_plus_no_passthrough(wiimote_number);
+			}
+			if (mote.extension_motion_plus_state && !is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
+				mote.available_capabilities |= wiimote_capabilities::Extension;
+				enable_only_extension(wiimote_number);
+			}
 		}
 	}
 
@@ -58,6 +60,7 @@ namespace dolphiimote {
 		auto& mote = wiimote_states[wiimote];
 
 		mote.available_capabilities &= ~wiimote_capabilities::Extension;
+		mote.set_extension_disabled();
 	}
 
 	void capability_discoverer::handle_extension_controller_changed(bool extension_controller_connected, int wiimote, bool& changed)
@@ -132,8 +135,8 @@ namespace dolphiimote {
 			_id_to_extension_type[0x0100A4200505] = wiimote_extensions::Passthrough; // Activated Wii Motion Plus in Nunchuck passthrough mode
 			_id_to_extension_type[0xFF00A4200000] = wiimote_extensions::Nunchuck; //WEIRD - had a nunchuk that always gave off this ID. Was there any difference?
 			_id_to_extension_type[0x0000A4200101] = wiimote_extensions::ClassicController;
-			_id_to_extension_type[0x0000A4200705] = wiimote_extensions::ClassicController; // Activated Wii Motion Plus in Classic Controller passthrough mode
-			_id_to_extension_type[0x0100A4200705] = wiimote_extensions::ClassicController; // Activated Wii Motion Plus in Classic Controller passthrough mode
+			_id_to_extension_type[0x0000A4200705] = wiimote_extensions::Passthrough; // Activated Wii Motion Plus in Classic Controller passthrough mode
+			_id_to_extension_type[0x0100A4200705] = wiimote_extensions::Passthrough; // Activated Wii Motion Plus in Classic Controller passthrough mode
 			_id_to_extension_type[0x0100A4200101] = wiimote_extensions::ClassicControllerPro;
 			_id_to_extension_type[0x0000A4200103] = wiimote_extensions::GHGuitar;
 			_id_to_extension_type[0x0100A4200103] = wiimote_extensions::GHWorldTourDrums;
@@ -185,14 +188,14 @@ namespace dolphiimote {
 				mote.enabled_capabilities |= wiimote_capabilities::MotionPlus;
 			}
 			else {
-				mote.extension_id = id;
 				if (id == 0x0100A4200405)
 				{
 					mote.enabled_capabilities &= ~wiimote_capabilities::Extension;
 					mote.enabled_capabilities |= wiimote_capabilities::MotionPlus;
 				}
-				else
+				else if (!(get_type_from_id(id) == wiimote_extensions::MotionPlus))
 				{
+					mote.extension_id = id;
 					mote.enabled_capabilities |= wiimote_capabilities::Extension;
 					mote.available_capabilities |= wiimote_capabilities::Extension;
 				}
@@ -279,7 +282,7 @@ namespace dolphiimote {
 
 	void capability_discoverer::send_status_request(int wiimote_number)
 	{
-		//TODO: Send status report
+		sender.send(wiimote_message(wiimote_number, {0xa2, 0x15, 0}, 3, true));
 	}
 
 	void capability_discoverer::enable_motion_plus_no_passthrough(int wiimote_number)
@@ -355,4 +358,5 @@ namespace dolphiimote {
 
 		handle_motion_plus_and_extension_enabling(wiimote_number, capabilities_to_enable);
 	}
+
 }

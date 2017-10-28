@@ -121,14 +121,6 @@ namespace dolphiimote {
         if(pair.first(state))
           pair.second(data, state, output);
 
-	  if (output.valid_data_flags & dolphiimote_MOTIONPLUS_VALID) {
-		  if (output.motionplus.extension_connected) {
-			  state.available_capabilities |= wiimote_capabilities::Extension;
-		  }
-		  else {
-			  state.available_capabilities &= ~wiimote_capabilities::Extension;
-		  }
-	  }
     }
 
     void data_reporter::handle_data_reporting(dolphiimote_callbacks &callbacks, int wiimote_number, u8 reporting_mode, checked_array<const u8> data)
@@ -146,6 +138,9 @@ namespace dolphiimote {
                                 wiimote_data);
       }
 
+	  if (wiimote_data.valid_data_flags & dolphiimote_MOTIONPLUS_VALID) {
+		  wiimote_states[wiimote_number].extension_motion_plus_state = wiimote_data.motionplus.extension_connected;
+	  }
       if(callbacks.data_received != nullptr)
         callbacks.data_received(wiimote_number, &wiimote_data, callbacks.userdata);
     }

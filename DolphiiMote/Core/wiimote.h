@@ -150,6 +150,7 @@ namespace dolphiimote
     u8 led_state;
     bool rumble_state;  
 	wiimote_calibrations calibrations;
+	bool extension_motion_plus_state;
   };
 
   class wiimote_message
