@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with DolphiiMote.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "capability_discoverer.h"
+#include "capability_discoverer.h"#include <chrono>
+#include <thread>
 
 namespace dolphiimote {
 
@@ -133,8 +134,10 @@ namespace dolphiimote {
 
 		fill_capabilities(status, wiimote_states[wiimote]);
 
-		if (callbacks.capabilities_changed)
+		if (callbacks.capabilities_changed) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			callbacks.capabilities_changed(wiimote, &status, callbacks.userdata);
+		}
 	}
 
 	std::map<u64, wiimote_extensions::type> _id_to_extension_type;
