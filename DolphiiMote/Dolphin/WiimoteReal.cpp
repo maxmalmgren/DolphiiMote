@@ -645,7 +645,8 @@ bool IsValidBluetoothName(const std::string& name)
 {
 	return
 		"Nintendo RVL-CNT-01" == name ||
-		"Nintendo RVL-CNT-01-TR" == name;
+		"Nintendo RVL-CNT-01-TR" == name ||
+		"Nintendo RVL-WBC-01" == name;
 }
 
 }; // end of namespace
