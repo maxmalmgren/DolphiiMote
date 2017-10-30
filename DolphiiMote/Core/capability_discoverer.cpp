@@ -134,7 +134,7 @@ namespace dolphiimote {
 		fill_capabilities(status, wiimote_states[wiimote]);
 
 		if (callbacks.capabilities_changed) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			std::this_thread::sleep_for(std::chrono::milliseconds(150));
 			callbacks.capabilities_changed(wiimote, &status, callbacks.userdata);
 		}
 	}
@@ -198,24 +198,22 @@ namespace dolphiimote {
 		if (error_bit == 0 && data.valid())
 		{
 			u64 id = read_extension_id(extension_id);
+			wiimote_extensions::type type = get_type_from_id(id);
 			//When we get a passthrough id, don't override the current extension id!
-			if (get_type_from_id(id) == wiimote_extensions::Passthrough) {
+			if (type == wiimote_extensions::Passthrough) {
 				mote.enabled_capabilities |= wiimote_capabilities::Extension;
 				mote.enabled_capabilities |= wiimote_capabilities::MotionPlus;
 			}
-			else {
-				if (id == 0x0100A4200405)
-				{
-					mote.enabled_capabilities |= wiimote_capabilities::MotionPlus;
-				}
-				else if (!(get_type_from_id(id) == wiimote_extensions::MotionPlus))
-				{
-					mote.extension_id = id;
-					mote.enabled_capabilities |= wiimote_capabilities::Extension;
-					mote.available_capabilities |= wiimote_capabilities::Extension;
-				}
+			else if (type == wiimote_extensions::MotionPlus)
+			{
+				mote.enabled_capabilities |= wiimote_capabilities::MotionPlus;
 			}
-
+			else 
+			{
+				mote.extension_id = id;
+				mote.enabled_capabilities |= wiimote_capabilities::Extension;
+				mote.available_capabilities |= wiimote_capabilities::Extension;
+			}
 		}
 		else
 		{
