@@ -315,6 +315,7 @@ dolphiimote_GUITAR_BUTTON_* are the Classic Controller buttons, as they are save
 #define dolphiimote_EXTENSION_GUITAR_HERO_WORLD_TOUR_DRUMS 0x0010
 #define dolphiimote_EXTENSION_MOTION_PLUS 0x0020
 #define dolphiimote_EXTENSION_BALANCE_BOARD 0x0030
+#define dolphiimote_EXTENSION_UNKNOWN 0x0050
 
 /*
   dolphiimote_CAPABILITIES_* are the capabilities that can be enabled.

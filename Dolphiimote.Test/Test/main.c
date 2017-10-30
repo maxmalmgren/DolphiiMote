@@ -201,6 +201,9 @@ void on_capabilities_changed(uint8_t wiimote, dolphiimote_capability_status *sta
 		state = 0 + 10 * wiimote;
       printf("None");
       break;
+	case dolphiimote_EXTENSION_UNKNOWN:
+		printf("Unknown");
+		break;
     case dolphiimote_EXTENSION_NUNCHUCK:
       printf("Nunchuck");
       break;

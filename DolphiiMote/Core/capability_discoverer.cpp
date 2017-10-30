@@ -37,6 +37,9 @@ namespace dolphiimote {
 				if (!is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
 					//Even if we arent using passthrough mode, we need to set this so that it can be enabled.
 					mote.available_capabilities |= wiimote_capabilities::Extension;
+					if (mote.extension_id == 0) {
+						mote.extension_type = wiimote_extensions::Unknown;
+					}
 					dispatch_capabilities_changed(wiimote_number, callbacks);
 				}
 			}

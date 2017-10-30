@@ -28,6 +28,7 @@ namespace dolphiimote
   const wiimote_extensions::type wiimote_extensions::MotionPlus = 0x20;
   const wiimote_extensions::type wiimote_extensions::BalanceBoard = 0x30;
   const wiimote_extensions::type wiimote_extensions::Passthrough = 0x40;
+  const wiimote_extensions::type wiimote_extensions::Unknown = 0x50;
 
   const wiimote_capabilities::type wiimote_capabilities::None = 0;
   const wiimote_capabilities::type wiimote_capabilities::MotionPlus = 0x2;
