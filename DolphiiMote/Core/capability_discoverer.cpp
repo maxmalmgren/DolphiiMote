@@ -34,24 +34,16 @@ namespace dolphiimote {
 		if (is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus)) {
 			//Since status reports aren't sent for passthrough extensions, we need to deal with this data seperately.
 			if (mote.extension_motion_plus_state) {
-				//If we have no idea what is currently plugged into the motion plus, swap to direct to get an id, then swap back to passthrough.
-				if (mote.extension_id == 0 && passthrough_mode(mote)) {
-					//Swap to direct extension access
-					sender.write_register(wiimote_number, 0xA400F0, 0x55, 1, std::bind(&capability_discoverer::handle_motion_plus_passthrough_disable, this, std::placeholders::_1));
-					//temporarily use a passthrough state until we find the real id.
-					mote.extension_id = 0x0000A4200505;
-				}
 				//Even if we arent using passthrough mode, we need to set this so that it can be enabled.
 				mote.available_capabilities |= wiimote_capabilities::Extension;
 			}
-			else if (passthrough_mode(mote)) {
-				//No extension plugged in, yet we are in passthrough mode. Lets disable this. Also set the id to 0 as we now do not know what is plugged in.
-				mote.extension_id = 0;
-				mote.available_capabilities &= ~wiimote_capabilities::Extension;
-				//Enable the motion plus normally as extension data is pointless now.
-				enable_motion_plus_no_passthrough(wiimote_number);
-			}
 			else {
+				if (passthrough_mode(mote)) {
+					//No extension plugged in, yet we are in passthrough mode. Lets disable this. Also set the id to 0 as we now do not know what is plugged in.
+					mote.extension_id = 0;
+					//Enable the motion plus normally as extension data is pointless now.
+					enable_motion_plus_no_passthrough(wiimote_number);
+				}
 				//Extension unplugged, its no longer available.
 				mote.available_capabilities &= ~wiimote_capabilities::Extension;
 			}
@@ -337,6 +329,15 @@ namespace dolphiimote {
 
 	void capability_discoverer::enable_motion_plus_extension_passthrough(int wiimote_number)
 	{
+		wiimote mote = wiimote_states[wiimote_number];
+		//If we have no idea what is currently plugged into the motion plus, swap to direct to get an id, then swap back to passthrough.
+		if (mote.extension_id == 0) {
+			//Swap to direct extension access
+			sender.write_register(wiimote_number, 0xA400F0, 0x55, 1, std::bind(&capability_discoverer::handle_motion_plus_passthrough_disable, this, std::placeholders::_1));
+			//temporarily use a passthrough state until we find the real id.
+			mote.extension_id = 0x0000A4200505;
+			return;
+		}
 		sender.write_register(wiimote_number, 0xA400F0, 0x55, 1);
 		sender.write_register(wiimote_number, 0xA400FB, 0x00, 1);
 		sender.write_register(wiimote_number, 0xA600F0, 0x55, 1);
