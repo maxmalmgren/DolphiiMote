@@ -31,15 +31,44 @@ namespace dolphiimote {
 		if (message_type == 0x20)
 			handle_status_report(wiimote_number, data);
 
-		if (!mote.extension_motion_plus_state && is_set(mote.available_capabilities, wiimote_capabilities::MotionPlus)) {
-			mote.available_capabilities &= ~wiimote_capabilities::Extension;
-			mote.enabled_capabilities &= ~wiimote_capabilities::Extension;
-			mote.extension_motion_plus_state = true;
-			dispatch_capabilities_changed(wiimote_number, callbacks);
-			enable_only_extension(wiimote_number);
+		if (is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus)) {
+			//Since status reports aren't sent for passthrough extensions, we need to deal with this data seperately.
+			if (mote.extension_motion_plus_state) {
+				//If we have no idea what is currently plugged into the motion plus, swap to direct to get an id, then swap back to passthrough.
+				if (mote.extension_id == 0 && passthrough_mode(mote)) {
+					//Swap to direct extension access
+					sender.write_register(wiimote_number, 0xA400F0, 0x55, 1, std::bind(&capability_discoverer::handle_motion_plus_passthrough_disable, this, std::placeholders::_1));
+					//temporarily use a passthrough state until we find the real id.
+					mote.extension_id = 0x0000A4200505;
+				}
+				//Even if we arent using passthrough mode, we need to set this so that it can be enabled.
+				mote.available_capabilities |= wiimote_capabilities::Extension;
+			}
+			else if (passthrough_mode(mote)) {
+				//No extension plugged in, yet we are in passthrough mode. Lets disable this. Also set the id to 0 as we now do not know what is plugged in.
+				mote.extension_id = 0;
+				mote.available_capabilities &= ~wiimote_capabilities::Extension;
+				//Enable the motion plus normally as extension data is pointless now.
+				enable_motion_plus_no_passthrough(wiimote_number);
+			}
+			else {
+				//Extension unplugged, its no longer available.
+				mote.available_capabilities &= ~wiimote_capabilities::Extension;
+			}
 		}
 	}
-
+	void capability_discoverer::handle_motion_plus_extension_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
+	{
+		//This is actually just an extension_id_message, so lets update our id
+		handle_extension_id_message(wiimote_number, data, callbacks);
+		//At this point, we know what type of controller is plugged in, so lets enable passthrough mode.
+		enable_motion_plus_extension_passthrough(wiimote_number);
+	}
+	void capability_discoverer::handle_motion_plus_passthrough_disable(int wiimote_number)
+	{
+		//At this point, we know the passthrough is disabled, so get the id of the controller.
+		reader.read(wiimote_number, 0XA400FA, 0x06, std::bind(&capability_discoverer::handle_motion_plus_extension_id_message, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	}
 	bool can_unobstrusively_enable_extension(const wiimote& mote)
 	{
 		return !is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus);
@@ -188,7 +217,6 @@ namespace dolphiimote {
 			else {
 				if (id == 0x0100A4200405)
 				{
-					mote.enabled_capabilities &= ~wiimote_capabilities::Extension;
 					mote.enabled_capabilities |= wiimote_capabilities::MotionPlus;
 				}
 				else if (!(get_type_from_id(id) == wiimote_extensions::MotionPlus))
@@ -202,7 +230,7 @@ namespace dolphiimote {
 		else
 		{
 			mote.extension_id = 0;
-			mote.enabled_capabilities &= ~wiimote_capabilities::Extension;
+			mote.available_capabilities &= ~wiimote_capabilities::Extension;
 		}
 		update_extension_type_from_id(wiimote_number);
 		dispatch_capabilities_changed(wiimote_number, callbacks);

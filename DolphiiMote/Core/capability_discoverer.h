@@ -50,7 +50,8 @@ namespace dolphiimote
     virtual void dispatch_capabilities_changed(int wiimote, dolphiimote_callbacks callbacks);
     virtual void handle_motion_plus_and_extension_enabling(int wiimote_number, wiimote_capabilities::type capabilities_to_enable);
     virtual void handle_extension_controller_changed(bool extension_controller_connected, int wiimote, bool& changed);
-
+	virtual void handle_motion_plus_passthrough_disable(int wiimote_number);
+	virtual void handle_motion_plus_extension_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks);
     virtual void enable_motion_plus_no_passthrough(int wiimote_number);
     virtual void enable_motion_plus_extension_passthrough(int wiimote_number);
     virtual void enable_only_extension(int wiimote);
