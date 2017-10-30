@@ -228,6 +228,9 @@ namespace dolphiimote {
 			reader.read(wiimote_number, 0xA40024, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 			reader.read(wiimote_number, 0xA40024 + 16, 8, std::bind(&capability_discoverer::handle_balanceboard_calibration2, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 		}
+		if (mote.extension_type == wiimote_extensions::Passthrough && mote.extension_id == 0) {
+			mote.extension_type = wiimote_extensions::Unknown;
+		}
 		//Appearently calibration data is stored for joysticks and things, but this is probably a pointless thing to bother calibrating for.
 		/*if (mote.extension_type == wiimote_extensions::Nunchuck) {
 			reader.read(wiimote_number, 0xA40020, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));

@@ -252,7 +252,6 @@ void on_capabilities_changed(uint8_t wiimote, dolphiimote_capability_status *sta
 
   printf("\n");
 
-  Sleep(500);
   dolphiimote_set_reporting_mode(wiimote, 0x35);
 }
 
