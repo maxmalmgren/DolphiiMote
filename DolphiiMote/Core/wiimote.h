@@ -152,6 +152,7 @@ namespace dolphiimote
     bool rumble_state;  
 	wiimote_calibrations calibrations;
 	bool extension_motion_plus_state;
+	bool extension_motion_plus_valid;
   };
 
   class wiimote_message

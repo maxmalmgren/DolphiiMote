@@ -146,6 +146,7 @@ namespace dolphiimote {
 	  if (wiimote_data.valid_data_flags & dolphiimote_MOTIONPLUS_VALID) {
 		  wiimote_states[wiimote_number].extension_motion_plus_state = wiimote_data.motionplus.extension_connected;
 	  }
+	  wiimote_states[wiimote_number].extension_motion_plus_valid = wiimote_data.valid_data_flags & dolphiimote_MOTIONPLUS_VALID;
       if(callbacks.data_received != nullptr)
         callbacks.data_received(wiimote_number, &wiimote_data, callbacks.userdata);
     }

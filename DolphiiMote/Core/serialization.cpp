@@ -118,10 +118,7 @@ namespace dolphiimote { namespace serialization {
       output.motionplus.slow_modes = (extension_data[3] & 0x03) << 1 | (extension_data[4] & 0x02) >> 1;
       output.motionplus.extension_connected = extension_data[4] & 0x01;
 	}
-	else if (extension_data[5] & 0x02) {
-		//The data is invalid, so we cant trust knowing if the extension is connected or not.
-		output.motionplus.extension_connected = false;
-	}
+
   }
 
   void retrieve_nunchuck(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
