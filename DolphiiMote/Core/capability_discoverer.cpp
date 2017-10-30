@@ -49,8 +49,7 @@ namespace dolphiimote {
 				if (passthrough_mode(mote)) {
 					//Enable the motion plus normally as extension data is pointless now.
 					enable_motion_plus_no_passthrough(wiimote_number);
-				}
-				if (is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
+				} else if (is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
 					//No extension plugged in, yet we are in passthrough mode. Lets disable this.
 					mote.set_extension_disabled();
 					dispatch_capabilities_changed(wiimote_number, callbacks);
@@ -216,6 +215,7 @@ namespace dolphiimote {
 					mote.available_capabilities |= wiimote_capabilities::Extension;
 				}
 			}
+
 		}
 		else
 		{
@@ -227,9 +227,6 @@ namespace dolphiimote {
 		if (mote.extension_type == wiimote_extensions::BalanceBoard) {
 			reader.read(wiimote_number, 0xA40024, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 			reader.read(wiimote_number, 0xA40024 + 16, 8, std::bind(&capability_discoverer::handle_balanceboard_calibration2, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		}
-		if (mote.extension_type == wiimote_extensions::Passthrough && mote.extension_id == 0) {
-			mote.extension_type = wiimote_extensions::Unknown;
 		}
 		//Appearently calibration data is stored for joysticks and things, but this is probably a pointless thing to bother calibrating for.
 		/*if (mote.extension_type == wiimote_extensions::Nunchuck) {

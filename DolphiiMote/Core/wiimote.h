@@ -140,6 +140,7 @@ namespace dolphiimote
 	  available_capabilities &= ~wiimote_capabilities::Extension;
       extension_id = 0;
       extension_type = 0;
+	  extension_motion_plus_state = false;
     }
 
     u64 extension_id;

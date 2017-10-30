@@ -109,7 +109,6 @@ namespace dolphiimote { namespace serialization {
 	//If extension 5 has the first bit set, its invalid.
     if(extension_data.size() >= 6 && (extension_data[5] & 0x02) && !(extension_data[5] & 0x01))
     {
-		
       output.valid_data_flags |= dolphiimote_MOTIONPLUS_VALID;
 
       output.motionplus.yaw_down_speed = extension_data[0] + ((u16)(extension_data[3] & speed_mask) << 6);
@@ -118,7 +117,11 @@ namespace dolphiimote { namespace serialization {
 
       output.motionplus.slow_modes = (extension_data[3] & 0x03) << 1 | (extension_data[4] & 0x02) >> 1;
       output.motionplus.extension_connected = extension_data[4] & 0x01;
-    }
+	}
+	else if (extension_data[5] & 0x02) {
+		//The data is invalid, so we cant trust knowing if the extension is connected or not.
+		output.motionplus.extension_connected = false;
+	}
   }
 
   void retrieve_nunchuck(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
