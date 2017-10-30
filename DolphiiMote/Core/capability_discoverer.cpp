@@ -38,6 +38,7 @@ namespace dolphiimote {
 					//Even if we arent using passthrough mode, we need to set this so that it can be enabled.
 					mote.available_capabilities |= wiimote_capabilities::Extension;
 					if (mote.extension_id == 0) {
+						//Its nice to know if you have no extension vs having an extension but not knowing what it is.
 						mote.extension_type = wiimote_extensions::Unknown;
 					}
 					dispatch_capabilities_changed(wiimote_number, callbacks);
@@ -64,7 +65,6 @@ namespace dolphiimote {
 	void capability_discoverer::handle_extension_connected(int wiimote)
 	{
 		auto& mote = wiimote_states[wiimote];
-
 		if (can_unobstrusively_enable_extension(mote))
 			init_and_identify_extension_controller(wiimote);
 	}
