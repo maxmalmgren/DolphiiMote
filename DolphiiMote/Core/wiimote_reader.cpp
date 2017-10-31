@@ -71,7 +71,6 @@ namespace dolphiimote {
 
         if(!state.unfinished_request || !same_lowest_address(data[6], data[5], state.unfinished_request.val().address))
           return;
-		printf("Address: %x", state.unfinished_request.val().address);
         state.unfinished_request.val().callback(wiimote_number, data, callbacks);
         state.unfinished_request.invalidate();
       }

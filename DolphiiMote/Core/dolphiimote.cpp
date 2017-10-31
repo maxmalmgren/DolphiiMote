@@ -26,7 +26,6 @@ int dolphiimote_init(dolphiimote_callbacks _callback)
 {
   host = std::shared_ptr<dolphiimote::dolphiimote_host>(new dolphiimote::dolphiimote_host(_callback));
   WiimoteReal::listeners.add(std::weak_ptr<WiimoteReal::wiimote_listener>(host));
-
   return host->number_of_wiimotes();
 }
 
@@ -44,20 +43,19 @@ void dolphiimote_set_rumble(uint8_t  wiimote_number, uint8_t enable)
 
 	host->do_rumble(wiimote_number, enable);
 }
+void dolphiimote_request_status(uint8_t  wiimote_number)
+{
+	if (!host)
+		return;
+
+	host->request_status(wiimote_number);
+}
 void dolphiimote_enable_capabilities(uint8_t wiimote_number, dolphiimote_capabilities capabilities)
 {
   if(!host)
     return;
 
   host->enable_capabilities(wiimote_number, (dolphiimote::wiimote_capabilities::type)capabilities);
-}
-
-void dolphiimote_determine_capabilities(uint8_t wiimote_number)
-{
-  if(!host)
-    return;
-
-  host->determine_capabilities(wiimote_number);
 }
 
 void dolphiimote_set_reporting_mode(uint8_t wiimote_number, uint8_t mode)

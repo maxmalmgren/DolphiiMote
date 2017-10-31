@@ -17,6 +17,7 @@
 
 #include "data_reporter.h"
 #include "serialization.h"
+#include "capability_discoverer.h"
 
 namespace dolphiimote {
     std::vector<std::pair<std::function<bool(const wiimote&)>, std::function<void(checked_array<const u8>, wiimote state, dolphiimote_wiimote_data&)>>> extension_retrievers;
@@ -73,7 +74,6 @@ namespace dolphiimote {
       standard_retrievers.push_back(std::make_pair(2 | 8 | 32 | 128, serialization::retrieve_acceleration_data));
       standard_retrievers.push_back(std::make_pair(8 | 64 | 128, serialization::retrieve_infrared_camera_data)); 
 
-      extension_retrievers.push_back(std::make_pair(motion_plus_filter(), serialization::retrieve_motion_plus));
       extension_retrievers.push_back(std::make_pair(nunchuck_filter(), serialization::retrieve_nunchuck));
       extension_retrievers.push_back(std::make_pair(interleaved_nunchuck_filter(), serialization::retrieve_interleaved_nunchuck));
       extension_retrievers.push_back(std::make_pair(classic_controller_filter(), serialization::retrieve_classic_controller));
@@ -120,11 +120,15 @@ namespace dolphiimote {
         retriever(reporting_mode, data,  wiimote_data);
     }
 
-    void retrieve_extension_data(int wiimote_number, wiimote& state, checked_array<const u8> data, dolphiimote_wiimote_data &output)
+    void data_reporter::retrieve_extension_data(int wiimote_number, wiimote& state, checked_array<const u8> data, dolphiimote_wiimote_data &output)
     {
       for(auto & pair : extension_retrievers)
         if(pair.first(state))
           pair.second(data, state, output);
+
+	  if (motion_plus_filter()(state)) {
+		  serialization::retrieve_motion_plus(data, state, output, discoverer, wiimote_number);
+	  }
 
     }
 
@@ -144,10 +148,8 @@ namespace dolphiimote {
                                 wiimote_data);
       }
 	  if (wiimote_data.valid_data_flags & dolphiimote_MOTIONPLUS_VALID) {
-		  mote.extension_motion_plus_state = wiimote_data.motionplus.extension_connected;
+		  discoverer.handle_motion_plus_extension(wiimote_number, wiimote_data.motionplus.extension_connected);
 	  }
-	  wiimote_data.status.battery_level = mote.battery_percentage;
-	  mote.extension_motion_plus_valid = wiimote_data.valid_data_flags & dolphiimote_MOTIONPLUS_VALID;
       if(callbacks.data_received != nullptr)
         callbacks.data_received(wiimote_number, &wiimote_data, callbacks.userdata);
     }

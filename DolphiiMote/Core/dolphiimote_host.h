@@ -35,9 +35,9 @@ namespace dolphiimote {
     dolphiimote_host(dolphiimote_callbacks callbacks);
 
 	void do_rumble(int wiimote_number, bool enable);
-    void do_brief_rumble(int wiimote_number);    
+    void do_brief_rumble(int wiimote_number);
+	void request_status(int wiimote_number);
     void enable_capabilities(int wiimote_number, wiimote_capabilities::type capability);
-    void determine_capabilities(int wiimote_number);
     void request_reporting_mode(int wiimote_number, u8 mode);
     virtual void data_received(int wiimote_number, const u16 channel, const void* const data, const u32 size);
     virtual void wiimote_connection_changed(int wiimote_number, bool connected);

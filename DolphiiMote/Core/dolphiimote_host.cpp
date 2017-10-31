@@ -23,9 +23,9 @@ namespace dolphiimote {
                                                                         current_wiimote_state(),
                                                                         sender(current_wiimote_state),
                                                                         reader(sender),
-                                                                        reporter(current_wiimote_state, sender),
+																		discoverer(current_wiimote_state, callbacks, sender, reader),
+                                                                        reporter(current_wiimote_state, sender, discoverer),
                                                                         rumble(current_wiimote_state, sender),
-                                                                        discoverer(current_wiimote_state, callbacks, sender, reader),
                                                                         handlers(init_handlers()),
                                                                         wiimotes_flag(init())
   { }
@@ -43,12 +43,14 @@ namespace dolphiimote {
     WiimoteReal::LoadSettings();
     WiimoteReal::Initialize();
     WiimoteReal::Refresh();
-
     auto wiimotes_flag = WiimoteReal::FoundWiimotesFlag();
 
     for(int i = 0, flag = wiimotes_flag; i < MAX_WIIMOTES; i++, flag >>= 1)
-      if(flag & 0x01)
-        current_wiimote_state[i] = dolphiimote::wiimote();
+		if (flag & 0x01) {
+			current_wiimote_state[i] = dolphiimote::wiimote();
+			discoverer.init_and_identify_extension_controller(i);
+			discoverer.send_status_request(i);
+		}
 
     return wiimotes_flag;
   }
@@ -61,17 +63,16 @@ namespace dolphiimote {
   {
 	  rumble.do_brief_rumble(wiimote_number);
   }
+  void dolphiimote_host::request_status(int wiimote_number)
+  {
+	  discoverer.send_status_request(wiimote_number);
+  }
   void dolphiimote_host::data_received(int wiimote_number, const u16 channel, const void* const data, const u32 size)
   {
     auto u8_data = checked_array<const u8>((const u8*)data, size);
 
     for(auto& handler : handlers)
       handler->data_received(callbacks, wiimote_number, u8_data);
-  }
-
-  void dolphiimote_host::determine_capabilities(int wiimote_number)
-  {
-    discoverer.determine_capabilities(wiimote_number);
   }
 
   int dolphiimote_host::number_of_wiimotes()

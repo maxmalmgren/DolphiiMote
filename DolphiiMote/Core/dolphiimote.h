@@ -145,8 +145,6 @@ typedef struct dolphiimote_wiimote_data
   dolphiimote_classic_controller classic_controller;
   dolphiimote_guitar guitar;
   dolphiimote_balance_board balance_board;
-  dolphiimote_status status;
-
 
 } dolphiimote_wiimote_data;
 
@@ -161,6 +159,7 @@ typedef struct dolphiimote_capability_status
 
 typedef void (*update_callback_t)(uint8_t wiimote_number, struct dolphiimote_wiimote_data *data_struct, void *userdata);
 typedef void (*connection_callback_t)(uint8_t wiimote_number, int connected);
+typedef void (*status_callback_t)(uint8_t wiimote_number, struct dolphiimote_status *data_struct, void *userdata);
 typedef void (*capabilities_callback_t)(uint8_t wiimote_number, struct dolphiimote_capability_status *capabilities, void *userdata);
 typedef void (*log_callback_t)(const char* str, uint32_t size);
 
@@ -178,6 +177,7 @@ typedef struct dolphiimote_callbacks
   update_callback_t data_received;
   connection_callback_t connection_changed;
   capabilities_callback_t capabilities_changed;
+  status_callback_t status_changed;
   log_callback_t log_received;
 
   void *userdata;
@@ -224,9 +224,9 @@ void dolphiimote_brief_rumble(uint8_t wiimote_number);
 */
 void dolphiimote_set_rumble(uint8_t wiimote_number, uint8_t enable);
 /*
-  Start a check for the current capabilities of the wiimote.
+  Request a status report from the wiimote (battery percentage, etc.)
 */
-void dolphiimote_determine_capabilities(uint8_t wiimote_number);
+void dolphiimote_request_status(uint8_t wiimote_number);
 
 /*
   Enable different features of the wiimote.

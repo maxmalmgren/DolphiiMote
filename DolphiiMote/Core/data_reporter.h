@@ -21,20 +21,23 @@
 #include "wiimote.h"
 #include "dolphiimote.h"
 #include "data_sender.h"
+#include "capability_discoverer.h"
 #include "Util/collections.h"
 
 namespace dolphiimote {  
   class data_reporter : public wiimote_data_handler
   {
   public:
-    data_reporter(std::map<int, wiimote> &wiimote_states, data_sender &sender) : wiimote_states(wiimote_states), sender(sender)
+    data_reporter(std::map<int, wiimote> &wiimote_states, data_sender &sender, capability_discoverer &discoverer) : wiimote_states(wiimote_states), sender(sender), discoverer(discoverer)
     { }
     void data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data);
     void request_reporting_mode(int wiimote_number, u8 reporting_mode);
+
   private:
     std::map<int, wiimote> &wiimote_states;
     data_sender &sender;
-
+	capability_discoverer &discoverer;
+	void retrieve_extension_data(int wiimote_number, wiimote& state, checked_array<const u8> data, dolphiimote_wiimote_data &output);
     void handle_data_reporting(dolphiimote_callbacks &callbacks, int wiimote_number, u8 reporting_mode, checked_array<const u8> data);
   };
 }

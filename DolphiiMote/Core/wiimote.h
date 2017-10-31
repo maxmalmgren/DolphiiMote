@@ -140,7 +140,6 @@ namespace dolphiimote
 	  available_capabilities &= ~wiimote_capabilities::Extension;
       extension_id = 0;
       extension_type = 0;
-	  extension_motion_plus_state = false;
     }
 
     u64 extension_id;
@@ -151,8 +150,7 @@ namespace dolphiimote
     u8 led_state;
     bool rumble_state;  
 	wiimote_calibrations calibrations;
-	bool extension_motion_plus_state;
-	bool extension_motion_plus_valid;
+	std::chrono::steady_clock::time_point motion_plus_last_detected;
 	u8 battery_percentage;
   };
 

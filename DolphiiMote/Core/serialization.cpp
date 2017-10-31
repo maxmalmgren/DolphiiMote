@@ -17,6 +17,7 @@
 
 #include "serialization.h"
 #include "wiimote.h"
+#include "capability_discoverer.h"
 namespace dolphiimote { namespace serialization {
 	const float KG2LB = 2.20462262f;
     std::array<u8, 23> _start_rumble = { 0xA2, 0x15, 0x01 };
@@ -103,7 +104,7 @@ namespace dolphiimote { namespace serialization {
 			
 		}
 	}
-  void retrieve_motion_plus(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output)
+  void retrieve_motion_plus(checked_array<const u8> extension_data, wiimote state, dolphiimote_wiimote_data &output, capability_discoverer &discoverer, int wiimote_number)
   {
     u8 speed_mask = ~0x03;
 	//If extension 5 has the first bit set, its invalid.
@@ -117,6 +118,7 @@ namespace dolphiimote { namespace serialization {
 
       output.motionplus.slow_modes = (extension_data[3] & 0x03) << 1 | (extension_data[4] & 0x02) >> 1;
       output.motionplus.extension_connected = extension_data[4] & 0x01;
+	  discoverer.handle_motion_plus_extension(wiimote_number, output.motionplus.extension_connected);
 	}
 
   }

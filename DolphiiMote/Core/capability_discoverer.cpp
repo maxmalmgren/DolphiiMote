@@ -15,46 +15,61 @@
 // You should have received a copy of the GNU General Public License
 // along with DolphiiMote.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "capability_discoverer.h"#include <chrono>
+#include "capability_discoverer.h"
+#include <chrono>
 #include <thread>
 
 namespace dolphiimote {
 	const int MAX_BATTERY_VALUE = 0xc8;
-	bool passthrough_mode(wiimote &mote)
-	{
-		return is_set(mote.enabled_capabilities, wiimote_capabilities::Extension | wiimote_capabilities::MotionPlus);
-	}
 	void capability_discoverer::data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data)
 	{
 		auto& mote = wiimote_states[wiimote_number];
 		u8 message_type = data[1];
 
 		if (message_type == 0x20)
-			handle_status_report(wiimote_number, data);
-		if (is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus) && mote.extension_motion_plus_valid) {
-			//Since status reports aren't sent for passthrough extensions, we need to deal with this data seperately.
-			if (mote.extension_motion_plus_state) {
-				if (!is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
-					//Even if we arent using passthrough mode, we need to set this so that it can be enabled.
-					mote.available_capabilities |= wiimote_capabilities::Extension;
-					if (mote.extension_id == 0) {
-						//Its nice to know if you have no extension vs having an extension but not knowing what it is.
-						mote.extension_type = wiimote_extensions::Unknown;
-					}
-					dispatch_capabilities_changed(wiimote_number, callbacks);
-				}
-			}
-			else {
-				if (passthrough_mode(mote)) {
-					//Enable the motion plus normally as extension data is pointless now.
-					enable_motion_plus_no_passthrough(wiimote_number);
-				} else if (is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
-					//No extension plugged in, yet we are in passthrough mode. Lets disable this.
-					mote.set_extension_disabled();
-					dispatch_capabilities_changed(wiimote_number, callbacks);
-				}
-			}
+			handle_status_report(wiimote_number, data, callbacks);
+
+		//You can only really detect if a motion plus is connected via polling.
+		//If no valid reports for the motion plus are recieved within 500 milliseconds, its either disabled, or unplugged, and reading the motion plus id will tell us which one it is.
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - mote.motion_plus_last_detected).count() > 500) {
+			//Check the id of the connected controller first, then use that to check if a motion plus is connected.
+			reader.read(wiimote_number, 0xA400FA, 6, std::bind(&capability_discoverer::handle_extension_id_message_test, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+			mote.motion_plus_last_detected = std::chrono::steady_clock::now();
 		}
+		
+	}
+
+	bool passthrough_mode(wiimote &mote)
+	{
+		return is_set(mote.enabled_capabilities, wiimote_capabilities::Extension | wiimote_capabilities::MotionPlus);
+	}
+	void capability_discoverer::handle_motion_plus_extension(int wiimote_number, bool extension_connected) {
+		auto& mote = wiimote_states[wiimote_number];
+		//If the motion plus is enabled, then this will reset the polling timer if a valid motion plus report is recieved
+		mote.motion_plus_last_detected = std::chrono::steady_clock::now();
+			//Since status reports aren't sent for passthrough extensions, we need to deal with this data seperately.
+		if (extension_connected) {
+			if (!is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
+				if (mote.extension_id == 0) {
+					//Its nice to know if you have no extension vs having an extension but not knowing what it is.
+					mote.extension_type = wiimote_extensions::Unknown;
+				}
+				mote.available_capabilities |= wiimote_capabilities::Extension;
+				dispatch_capabilities_changed(wiimote_number, callbacks);
+			}
+		} else if (passthrough_mode(mote)) {
+				//Enable the motion plus normally as extension data is pointless now.
+				enable_motion_plus_no_passthrough(wiimote_number);
+		} else if (is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
+			//No extension plugged in, yet we are in passthrough mode. Lets disable this.
+			mote.set_extension_disabled();
+			dispatch_capabilities_changed(wiimote_number, callbacks);
+		}
+		if (!is_set(mote.available_capabilities, wiimote_capabilities::MotionPlus)) {
+			mote.available_capabilities |= wiimote_capabilities::MotionPlus;
+			dispatch_capabilities_changed(wiimote_number, callbacks);
+		}
+		
 	}
 	bool can_unobstrusively_enable_extension(const wiimote& mote)
 	{
@@ -64,8 +79,10 @@ namespace dolphiimote {
 	void capability_discoverer::handle_extension_connected(int wiimote)
 	{
 		auto& mote = wiimote_states[wiimote];
-		if (can_unobstrusively_enable_extension(mote))
+		if (can_unobstrusively_enable_extension(mote)) {
 			init_and_identify_extension_controller(wiimote);
+		}
+
 	}
 
 	void capability_discoverer::handle_extension_disconnected(int wiimote)
@@ -79,25 +96,24 @@ namespace dolphiimote {
 	void capability_discoverer::handle_extension_controller_changed(bool extension_controller_connected, int wiimote, bool& changed)
 	{
 		auto& mote = wiimote_states[wiimote];
-
+		printf("State changed to: %d", extension_controller_connected);
 		if (extension_controller_connected && !is_set(mote.available_capabilities, wiimote_capabilities::Extension))
 		{
 			handle_extension_connected(wiimote);
 			changed = true;
 		}
 
-		if (!extension_controller_connected && is_set(mote.available_capabilities, wiimote_capabilities::Extension) && !passthrough_mode(mote))
+		if (!extension_controller_connected && is_set(mote.available_capabilities, wiimote_capabilities::Extension) && !is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus))
 		{
 			handle_extension_disconnected(wiimote);
 			changed = true;
 		}
 	}
 
-	void capability_discoverer::handle_status_report(int wiimote_number, checked_array<const u8> data)
+	void capability_discoverer::handle_status_report(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
 	{
 		if (data.size() < 5)
 			return;
-
 		wiimote_states[wiimote_number].battery_percentage = (data[7]/ (float)MAX_BATTERY_VALUE)*100;
 		u8 flags = data[4];
 
@@ -117,6 +133,11 @@ namespace dolphiimote {
 
 		if (capabilities_changed)
 			dispatch_capabilities_changed(wiimote_number, callbacks);
+		if (callbacks.status_changed) {
+			dolphiimote_status status = { 0 };
+			status.battery_level = wiimote_states[wiimote_number].battery_percentage;
+			callbacks.status_changed(wiimote_number, &status, callbacks.userdata);
+		}
 	}
 
 	void fill_capabilities(dolphiimote_capability_status &status, wiimote &mote)
@@ -188,7 +209,47 @@ namespace dolphiimote {
 
 		return id;
 	}
-
+	void capability_discoverer::handle_extension_id_message_test(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
+	{
+		wiimote& mote = wiimote_states[wiimote_number];
+		checked_array<const u8> extension_id = data.sub_array(7, 6);
+		wiimote_extensions::type type = get_type_from_id(read_extension_id(extension_id));
+		if (type == wiimote_extensions::Passthrough || type == wiimote_extensions::MotionPlus) {
+			if (!is_set(mote.available_capabilities, wiimote_capabilities::MotionPlus)) {
+				mote.available_capabilities |= wiimote_capabilities::MotionPlus;
+				dispatch_capabilities_changed(wiimote_number, callbacks);
+			}
+		}
+		else {
+			if (type == wiimote_extensions::None) {
+				if (is_set(mote.available_capabilities, wiimote_capabilities::Extension)) {
+					mote.set_extension_disabled();
+					dispatch_capabilities_changed(wiimote_number, callbacks);
+				}
+			}
+			reader.read(wiimote_number, 0xA600FA, 6, std::bind(&capability_discoverer::handle_extension_id_message_test2, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+		}
+	}
+	void capability_discoverer::handle_extension_id_message_test2(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
+	{
+		wiimote& mote = wiimote_states[wiimote_number];
+		checked_array<const u8> extension_id = data.sub_array(7, 6);
+		if (read_extension_id(extension_id) == 0) {
+			bool changed = false;
+			if (is_set(mote.available_capabilities, wiimote_capabilities::MotionPlus)) {
+				mote.available_capabilities &= ~wiimote_capabilities::MotionPlus;
+				mote.enabled_capabilities &= ~wiimote_capabilities::MotionPlus;
+				dispatch_capabilities_changed(wiimote_number, callbacks);
+			}
+		}
+		else if (!is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus)) {
+			mote.motion_plus_last_detected = std::chrono::steady_clock::now();
+			if (!is_set(mote.available_capabilities, wiimote_capabilities::MotionPlus)) {
+				mote.available_capabilities |= wiimote_capabilities::MotionPlus;
+				dispatch_capabilities_changed(wiimote_number, callbacks);
+			}
+		}
+	}
 	void capability_discoverer::handle_extension_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
 	{
 		auto& mote = wiimote_states[wiimote_number];
@@ -253,17 +314,17 @@ namespace dolphiimote {
 	void capability_discoverer::handle_motionplus_id_message(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
 	{
 		u8 error_bit = reader.read_error_bit(data);
-
-		if (error_bit == 0)
-		{
-			wiimote_states[wiimote_number].available_capabilities |= wiimote_capabilities::MotionPlus;
+		if (is_set(wiimote_states[wiimote_number].available_capabilities, wiimote_capabilities::MotionPlus) != (error_bit == 0)) {
+			if (error_bit == 0)
+			{
+				wiimote_states[wiimote_number].available_capabilities |= wiimote_capabilities::MotionPlus;
+			}
+			else
+			{
+				wiimote_states[wiimote_number].available_capabilities &= ~wiimote_capabilities::MotionPlus;
+			}
+			dispatch_capabilities_changed(wiimote_number, callbacks);
 		}
-		else
-		{
-			wiimote_states[wiimote_number].available_capabilities &= ~wiimote_capabilities::MotionPlus;
-		}
-
-		dispatch_capabilities_changed(wiimote_number, callbacks);
 	}
 
 	void capability_discoverer::send_extension_id_read_message(int wiimote_number)
@@ -280,12 +341,6 @@ namespace dolphiimote {
 		//According to wiibrew: init by writing 0x55 to 0x(4)A400F0, then writing 0x00 to 0x(4)A400FB
 	}
 
-	void capability_discoverer::determine_capabilities(int wiimote_number)
-	{
-		reader.read(wiimote_number, 0xA600FE, 0x02, std::bind(&capability_discoverer::handle_motionplus_id_message, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		//According to wiibrew: Read 0xa600fe for 2 extension ID bytes.
-		init_and_identify_extension_controller(wiimote_number);
-	}
 
 	void capability_discoverer::send_status_request(int wiimote_number)
 	{
@@ -382,7 +437,6 @@ namespace dolphiimote {
 		if ((capabilities_to_enable & wiimote_states[wiimote_number].available_capabilities) != capabilities_to_enable)
 		{
 			printf("capability_discoverer::enable: Capabilities not available to enable. Checking capabilities\n");
-			determine_capabilities(wiimote_number);
 			return;
 		}
 
