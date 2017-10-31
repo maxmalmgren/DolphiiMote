@@ -35,9 +35,15 @@ void dolphiimote_brief_rumble(uint8_t  wiimote_number)
   if(!host)
     return;
 
-  host->do_rumble(wiimote_number);
+  host->do_brief_rumble(wiimote_number);
 }
+void dolphiimote_set_rumble(uint8_t  wiimote_number, uint8_t enable)
+{
+	if (!host)
+		return;
 
+	host->do_rumble(wiimote_number, enable);
+}
 void dolphiimote_enable_capabilities(uint8_t wiimote_number, dolphiimote_capabilities capabilities)
 {
   if(!host)

@@ -29,7 +29,8 @@ namespace dolphiimote {
   {
   public:
     rumbler(std::map<int, wiimote> &current_wiimote_state, data_sender &sender);
-    void do_rumble(int wiimote_number);
+    void do_rumble(int wiimote_number, bool enable);
+	void do_brief_rumble(int wiimote_number);
 
   private:
     data_sender &sender;

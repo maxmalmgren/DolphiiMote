@@ -130,23 +130,24 @@ namespace dolphiimote {
 
     void data_reporter::handle_data_reporting(dolphiimote_callbacks &callbacks, int wiimote_number, u8 reporting_mode, checked_array<const u8> data)
     {
+	  wiimote& mote = wiimote_states[wiimote_number];
       dolphiimote_wiimote_data wiimote_data = { 0 };
 
-      retrieve_standard_data(reporting_mode, wiimote_states[wiimote_number], data, wiimote_data);
+      retrieve_standard_data(reporting_mode, mote, data, wiimote_data);
 
       if(reporting_mode_extension_data_offset.find(reporting_mode) != reporting_mode_extension_data_offset.end())
       {
         retrieve_extension_data(wiimote_number,
-                                wiimote_states[wiimote_number],
+			mote,
                                 data.sub_array(reporting_mode_extension_data_offset[reporting_mode].offset,
                                                reporting_mode_extension_data_offset[reporting_mode].size),
                                 wiimote_data);
       }
-
 	  if (wiimote_data.valid_data_flags & dolphiimote_MOTIONPLUS_VALID) {
-		  wiimote_states[wiimote_number].extension_motion_plus_state = wiimote_data.motionplus.extension_connected;
+		  mote.extension_motion_plus_state = wiimote_data.motionplus.extension_connected;
 	  }
-	  wiimote_states[wiimote_number].extension_motion_plus_valid = wiimote_data.valid_data_flags & dolphiimote_MOTIONPLUS_VALID;
+	  wiimote_data.status.battery_level = mote.battery_percentage;
+	  mote.extension_motion_plus_valid = wiimote_data.valid_data_flags & dolphiimote_MOTIONPLUS_VALID;
       if(callbacks.data_received != nullptr)
         callbacks.data_received(wiimote_number, &wiimote_data, callbacks.userdata);
     }

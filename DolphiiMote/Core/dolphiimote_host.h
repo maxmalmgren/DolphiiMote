@@ -34,8 +34,8 @@ namespace dolphiimote {
   public:
     dolphiimote_host(dolphiimote_callbacks callbacks);
 
-    void do_rumble(int wiimote_number);    
-
+	void do_rumble(int wiimote_number, bool enable);
+    void do_brief_rumble(int wiimote_number);    
     void enable_capabilities(int wiimote_number, wiimote_capabilities::type capability);
     void determine_capabilities(int wiimote_number);
     void request_reporting_mode(int wiimote_number, u8 mode);

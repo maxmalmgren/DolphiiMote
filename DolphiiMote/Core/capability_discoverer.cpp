@@ -19,7 +19,7 @@
 #include <thread>
 
 namespace dolphiimote {
-
+	const int MAX_BATTERY_VALUE = 0xc8;
 	bool passthrough_mode(wiimote &mote)
 	{
 		return is_set(mote.enabled_capabilities, wiimote_capabilities::Extension | wiimote_capabilities::MotionPlus);
@@ -31,7 +31,6 @@ namespace dolphiimote {
 
 		if (message_type == 0x20)
 			handle_status_report(wiimote_number, data);
-
 		if (is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus) && mote.extension_motion_plus_valid) {
 			//Since status reports aren't sent for passthrough extensions, we need to deal with this data seperately.
 			if (mote.extension_motion_plus_state) {
@@ -99,6 +98,7 @@ namespace dolphiimote {
 		if (data.size() < 5)
 			return;
 
+		wiimote_states[wiimote_number].battery_percentage = (data[7]/ (float)MAX_BATTERY_VALUE)*100;
 		u8 flags = data[4];
 
 		bool battery_low = flags & 0x01;
@@ -226,13 +226,6 @@ namespace dolphiimote {
 			reader.read(wiimote_number, 0xA40024, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 			reader.read(wiimote_number, 0xA40024 + 16, 8, std::bind(&capability_discoverer::handle_balanceboard_calibration2, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 		}
-		//Appearently calibration data is stored for joysticks and things, but this is probably a pointless thing to bother calibrating for.
-		/*if (mote.extension_type == wiimote_extensions::Nunchuck) {
-			reader.read(wiimote_number, 0xA40020, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		}
-		if (mote.extension_type == wiimote_extensions::ClassicController || mote.extension_type == wiimote_extensions::ClassicControllerPro) {
-			reader.read(wiimote_number, 0xA40020, 16, std::bind(&capability_discoverer::handle_balanceboard_calibration1, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		}*/
 	}
 	void capability_discoverer::handle_balanceboard_calibration1(int wiimote_number, checked_array<const u8> data, dolphiimote_callbacks callbacks)
 	{

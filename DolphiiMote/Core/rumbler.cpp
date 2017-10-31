@@ -21,18 +21,31 @@ namespace dolphiimote {
   rumbler::rumbler(std::map<int, wiimote> &current_wiimote_state, data_sender &sender) : sender(sender), current_wiimote_state(current_wiimote_state), brief_rumble_duration(200)
   { }
 
-  void rumbler::do_rumble(int wiimote_number)
+  void rumbler::do_rumble(int wiimote_number, bool enable)
   {
-    if(current_wiimote_state.find(wiimote_number) != current_wiimote_state.end() && !current_wiimote_state[wiimote_number].rumble_active())
+    if(current_wiimote_state.find(wiimote_number) != current_wiimote_state.end() && enable != current_wiimote_state[wiimote_number].rumble_active())
     {
-      current_wiimote_state[wiimote_number].begin_brief_rumble();
-      sender.send(wiimote_message(wiimote_number, serialization::start_rumble(), serialization::rumble_size(), [this](int wiimote_number) {
-        auto time_to_end_vibration = steady_time_point::clock::now() + std::chrono::milliseconds(brief_rumble_duration);
-        sender.send(wiimote_message(wiimote_number, time_to_end_vibration, serialization::stop_rumble(), serialization::rumble_size(), std::bind(&rumbler::on_end_rumble, this, std::placeholders::_1), false));                         
-      }, false));
+		if (enable) {
+			current_wiimote_state[wiimote_number].begin_brief_rumble();
+			sender.send(wiimote_message(wiimote_number, serialization::start_rumble(), serialization::rumble_size(), [this](int wiimote_number) {
+			}, false));
+		}
+		else {
+			sender.send(wiimote_message(wiimote_number, steady_time_point::clock::now(), serialization::stop_rumble(), serialization::rumble_size(), std::bind(&rumbler::on_end_rumble, this, std::placeholders::_1), false));
+		}
     }
   }
-
+  void rumbler::do_brief_rumble(int wiimote_number)
+  {
+	  if (current_wiimote_state.find(wiimote_number) != current_wiimote_state.end() && !current_wiimote_state[wiimote_number].rumble_active())
+	  {
+		  current_wiimote_state[wiimote_number].begin_brief_rumble();
+		  sender.send(wiimote_message(wiimote_number, serialization::start_rumble(), serialization::rumble_size(), [this](int wiimote_number) {
+			  auto time_to_end_vibration = steady_time_point::clock::now() + std::chrono::milliseconds(brief_rumble_duration);
+			  sender.send(wiimote_message(wiimote_number, time_to_end_vibration, serialization::stop_rumble(), serialization::rumble_size(), std::bind(&rumbler::on_end_rumble, this, std::placeholders::_1), false));
+		  }, false));
+	  }
+  }
   void rumbler::on_end_rumble(int wiimote_number)
   {
     current_wiimote_state[wiimote_number].end_brief_rumble();

@@ -128,6 +128,11 @@ typedef struct dolphiimote_guitar
 	uint16_t buttons;
 
 } dolphiimote_guitar;
+typedef struct dolphiimote_status
+{
+	uint8_t battery_level;
+
+} dolphiimote_status;
 typedef struct dolphiimote_wiimote_data
 {  
   dolphiimote_button_state button_state;
@@ -140,6 +145,8 @@ typedef struct dolphiimote_wiimote_data
   dolphiimote_classic_controller classic_controller;
   dolphiimote_guitar guitar;
   dolphiimote_balance_board balance_board;
+  dolphiimote_status status;
+
 
 } dolphiimote_wiimote_data;
 
@@ -212,6 +219,10 @@ void dolphiimote_set_reporting_mode(uint8_t wiimote_number, uint8_t mode);
 */
 void dolphiimote_brief_rumble(uint8_t wiimote_number);
 
+/*
+  Set rumble state to enabled
+*/
+void dolphiimote_set_rumble(uint8_t wiimote_number, uint8_t enable);
 /*
   Start a check for the current capabilities of the wiimote.
 */

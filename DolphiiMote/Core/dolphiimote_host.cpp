@@ -53,11 +53,14 @@ namespace dolphiimote {
     return wiimotes_flag;
   }
 
-  void dolphiimote_host::do_rumble(int wiimote_number)
+  void dolphiimote_host::do_rumble(int wiimote_number, bool enable)
   {
-    rumble.do_rumble(wiimote_number);
+    rumble.do_rumble(wiimote_number, enable);
   }
-
+  void dolphiimote_host::do_brief_rumble(int wiimote_number)
+  {
+	  rumble.do_brief_rumble(wiimote_number);
+  }
   void dolphiimote_host::data_received(int wiimote_number, const u16 channel, const void* const data, const u32 size)
   {
     auto u8_data = checked_array<const u8>((const u8*)data, size);

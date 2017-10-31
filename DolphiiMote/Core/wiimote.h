@@ -153,6 +153,7 @@ namespace dolphiimote
 	wiimote_calibrations calibrations;
 	bool extension_motion_plus_state;
 	bool extension_motion_plus_valid;
+	u8 battery_percentage;
   };
 
   class wiimote_message
