@@ -119,8 +119,10 @@ namespace dolphiimote {
 	{
 		if (data.size() < 5)
 			return;
-		wiimote_states[wiimote_number].battery_percentage = (data[7]/ (float)MAX_BATTERY_VALUE)*100;
 		u8 flags = data[4];
+
+		wiimote_states[wiimote_number].battery_percentage = (data[7] / (float)MAX_BATTERY_VALUE) * 100;
+		wiimote_states[wiimote_number].led_state = flags & 0xf0;
 
 		bool battery_low = flags & 0x01;
 		bool extension_controller_connected = flags & 0x02;
@@ -131,7 +133,6 @@ namespace dolphiimote {
 		bool led_2 = flags & 0x20;
 		bool led_3 = flags & 0x40;
 		bool led_4 = flags & 0x80;
-
 		bool capabilities_changed = false;
 
 		handle_extension_controller_changed(flags & 0x02, wiimote_number, capabilities_changed);
