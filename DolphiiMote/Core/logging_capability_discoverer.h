@@ -28,6 +28,16 @@ namespace dolphiimote
     logging_capability_discoverer(std::map<int, wiimote> &wiimote_states, dolphiimote_callbacks callbacks, data_sender &sender, wiimote_reader &reader) : capability_discoverer(wiimote_states, callbacks, sender, reader)
     { }
 
+	inline virtual void init_and_identify_extension_controller(int wiimote)
+	{
+		log(Info, "Wiimote #%i: Attempting to identify and initialize extension controller", wiimote);
+		capability_discoverer::init_and_identify_extension_controller(wiimote);
+	}
+	inline virtual void send_status_request(int wiimote) {
+		log(Info, "Wiimote #%i: Sending status request", wiimote);
+		capability_discoverer::send_status_request(wiimote);
+	}
+
   private:
     inline virtual void handle_extension_connected(int wiimote)
     {
@@ -47,12 +57,6 @@ namespace dolphiimote
       capability_discoverer::enable_motion_plus_no_passthrough(wiimote);
     }
 
-    inline virtual void init_and_identify_extension_controller(int wiimote)
-    {
-      log(Info, "Wiimote #%i: Attempting to identify and initialize extension controller", wiimote);
-      capability_discoverer::init_and_identify_extension_controller(wiimote);
-    }
-
     inline virtual void enable_only_extension(int wiimote)
     {
       log(Info, "Wiimote #%i: Enabling only extension", wiimote);
@@ -62,10 +66,11 @@ namespace dolphiimote
     inline virtual void handle_motionplus_id_message(int wiimote, checked_array<const u8> data, dolphiimote_callbacks callbacks)
     {
       u8 error_bit = reader.read_error_bit(data);
-
-      if(error_bit == 0)
-        log(Info, "Wiimote #%i: MotionPlus available", wiimote);
-      else log(Info, "Wiimote #%i: MotionPlus not available", wiimote);
+	  if (is_set(wiimote_states[wiimote].available_capabilities, wiimote_capabilities::MotionPlus) != (error_bit == 0)) {
+		  if (error_bit == 0)
+			  log(Info, "Wiimote #%i: MotionPlus available", wiimote);
+		  else log(Info, "Wiimote #%i: MotionPlus not available", wiimote);
+	  }
 
       capability_discoverer::handle_motionplus_id_message(wiimote, data, callbacks);
     }

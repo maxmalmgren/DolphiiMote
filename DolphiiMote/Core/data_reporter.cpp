@@ -17,6 +17,7 @@
 
 #include "data_reporter.h"
 #include "serialization.h"
+#include "capability_discoverer.h"
 
 namespace dolphiimote {
     std::vector<std::pair<std::function<bool(const wiimote&)>, std::function<void(checked_array<const u8>, wiimote state, dolphiimote_wiimote_data&)>>> extension_retrievers;
@@ -33,6 +34,7 @@ namespace dolphiimote {
     {
       return [=](const wiimote& mote) { return is_set(mote.enabled_capabilities, wiimote_capabilities::MotionPlus); };
     }
+
 	std::function<bool(const wiimote&)> balance_board_filter()
 	{
 		return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::BalanceBoard)(mote) && !motion_plus_filter()(mote); };
@@ -40,6 +42,10 @@ namespace dolphiimote {
 	std::function<bool(const wiimote&)> guitar_filter()
 	{
 		return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::GHGuitar)(mote) && !motion_plus_filter()(mote); };
+	}
+	std::function<bool(const wiimote&)> interleaved_guitar_filter()
+	{
+		return [=](const wiimote& mote) { return standard_extension_filter(wiimote_extensions::GHGuitar)(mote) && motion_plus_filter()(mote); };
 	}
 
     std::function<bool(const wiimote&)> nunchuck_filter()
@@ -68,12 +74,12 @@ namespace dolphiimote {
       standard_retrievers.push_back(std::make_pair(2 | 8 | 32 | 128, serialization::retrieve_acceleration_data));
       standard_retrievers.push_back(std::make_pair(8 | 64 | 128, serialization::retrieve_infrared_camera_data)); 
 
-      extension_retrievers.push_back(std::make_pair(motion_plus_filter(), serialization::retrieve_motion_plus));
       extension_retrievers.push_back(std::make_pair(nunchuck_filter(), serialization::retrieve_nunchuck));
       extension_retrievers.push_back(std::make_pair(interleaved_nunchuck_filter(), serialization::retrieve_interleaved_nunchuck));
       extension_retrievers.push_back(std::make_pair(classic_controller_filter(), serialization::retrieve_classic_controller));
       extension_retrievers.push_back(std::make_pair(interleaved_classic_controller_filter(), serialization::retrieve_interleaved_classic_controller));
 	  extension_retrievers.push_back(std::make_pair(guitar_filter(), serialization::retrieve_guitar));
+	  extension_retrievers.push_back(std::make_pair(interleaved_guitar_filter(), serialization::retrieve_interleaved_guitar));
 	  extension_retrievers.push_back(std::make_pair(balance_board_filter(), serialization::retrieve_balance_board));
     }
 
@@ -114,30 +120,36 @@ namespace dolphiimote {
         retriever(reporting_mode, data,  wiimote_data);
     }
 
-    void retrieve_extension_data(int wiimote_number, wiimote& state, checked_array<const u8> data, dolphiimote_wiimote_data &output)
+    void data_reporter::retrieve_extension_data(int wiimote_number, wiimote& state, checked_array<const u8> data, dolphiimote_wiimote_data &output)
     {
-      wiimote_extensions::type enabled_extension = state.extension_type;
-
       for(auto & pair : extension_retrievers)
         if(pair.first(state))
           pair.second(data, state, output);
+
+	  if (motion_plus_filter()(state)) {
+		  serialization::retrieve_motion_plus(data, state, output, discoverer, wiimote_number);
+	  }
+
     }
 
     void data_reporter::handle_data_reporting(dolphiimote_callbacks &callbacks, int wiimote_number, u8 reporting_mode, checked_array<const u8> data)
     {
+	  wiimote& mote = wiimote_states[wiimote_number];
       dolphiimote_wiimote_data wiimote_data = { 0 };
 
-      retrieve_standard_data(reporting_mode, wiimote_states[wiimote_number], data, wiimote_data);
+      retrieve_standard_data(reporting_mode, mote, data, wiimote_data);
 
       if(reporting_mode_extension_data_offset.find(reporting_mode) != reporting_mode_extension_data_offset.end())
       {
         retrieve_extension_data(wiimote_number,
-                                wiimote_states[wiimote_number],
+			mote,
                                 data.sub_array(reporting_mode_extension_data_offset[reporting_mode].offset,
                                                reporting_mode_extension_data_offset[reporting_mode].size),
                                 wiimote_data);
       }
-
+	  if (wiimote_data.valid_data_flags & dolphiimote_MOTIONPLUS_VALID) {
+		  discoverer.handle_motion_plus_extension(wiimote_number, wiimote_data.motionplus.extension_connected);
+	  }
       if(callbacks.data_received != nullptr)
         callbacks.data_received(wiimote_number, &wiimote_data, callbacks.userdata);
     }

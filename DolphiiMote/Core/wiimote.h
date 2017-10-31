@@ -90,7 +90,7 @@ namespace dolphiimote
   { 
   public:
     typedef enumeration<uint32_t, 0> type;
-    static const type None, Nunchuck, ClassicController, ClassicControllerPro, GHGuitar, GHWorldTourDrums, MotionPlus, BalanceBoard;
+    static const type None, Unknown, Nunchuck, ClassicController, ClassicControllerPro, GHGuitar, GHWorldTourDrums, MotionPlus, Passthrough, BalanceBoard;
   };
 
   class wiimote_data_handler
@@ -137,6 +137,7 @@ namespace dolphiimote
     void set_extension_disabled()
     {
       enabled_capabilities &= ~wiimote_capabilities::Extension;
+	  available_capabilities &= ~wiimote_capabilities::Extension;
       extension_id = 0;
       extension_type = 0;
     }
@@ -149,6 +150,8 @@ namespace dolphiimote
     u8 led_state;
     bool rumble_state;  
 	wiimote_calibrations calibrations;
+	std::chrono::steady_clock::time_point motion_plus_last_detected;
+	u8 battery_percentage;
   };
 
   class wiimote_message

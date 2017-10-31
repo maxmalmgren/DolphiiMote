@@ -176,7 +176,7 @@ void Wiimote::InterruptChannel(const u16 channel, const void* const _data, const
  	
  	// Disallow games from turning off all of the LEDs.
  	// It makes wiimote connection status confusing.
- 	if (rpt.first[1] == WM_LEDS)
+ 	/*if (rpt.first[1] == WM_LEDS)
 	{
 		auto& leds_rpt = *reinterpret_cast<wm_leds*>(&rpt.first[2]);
 		if (0 == leds_rpt.leds)
@@ -184,8 +184,8 @@ void Wiimote::InterruptChannel(const u16 channel, const void* const _data, const
 			// Turn on ALL of the LEDs.
 			leds_rpt.leds = 0xf;
 		}
-	}
-	else if (rpt.first[1] == WM_WRITE_SPEAKER_DATA)
+	}*/
+	if (rpt.first[1] == WM_WRITE_SPEAKER_DATA)
 	{
 		// Translate speaker data reports into rumble reports.
 		rpt.first[1] = WM_CMD_RUMBLE;
@@ -645,7 +645,8 @@ bool IsValidBluetoothName(const std::string& name)
 {
 	return
 		"Nintendo RVL-CNT-01" == name ||
-		"Nintendo RVL-CNT-01-TR" == name;
+		"Nintendo RVL-CNT-01-TR" == name ||
+		"Nintendo RVL-WBC-01" == name;
 }
 
 }; // end of namespace

@@ -128,6 +128,12 @@ typedef struct dolphiimote_guitar
 	uint16_t buttons;
 
 } dolphiimote_guitar;
+typedef struct dolphiimote_status
+{
+	uint8_t battery_level;
+	uint8_t led_status;
+
+} dolphiimote_status;
 typedef struct dolphiimote_wiimote_data
 {  
   dolphiimote_button_state button_state;
@@ -154,6 +160,7 @@ typedef struct dolphiimote_capability_status
 
 typedef void (*update_callback_t)(uint8_t wiimote_number, struct dolphiimote_wiimote_data *data_struct, void *userdata);
 typedef void (*connection_callback_t)(uint8_t wiimote_number, int connected);
+typedef void (*status_callback_t)(uint8_t wiimote_number, struct dolphiimote_status *data_struct, void *userdata);
 typedef void (*capabilities_callback_t)(uint8_t wiimote_number, struct dolphiimote_capability_status *capabilities, void *userdata);
 typedef void (*log_callback_t)(const char* str, uint32_t size);
 
@@ -171,6 +178,7 @@ typedef struct dolphiimote_callbacks
   update_callback_t data_received;
   connection_callback_t connection_changed;
   capabilities_callback_t capabilities_changed;
+  status_callback_t status_changed;
   log_callback_t log_received;
 
   void *userdata;
@@ -213,10 +221,18 @@ void dolphiimote_set_reporting_mode(uint8_t wiimote_number, uint8_t mode);
 void dolphiimote_brief_rumble(uint8_t wiimote_number);
 
 /*
-  Start a check for the current capabilities of the wiimote.
+  Set rumble state to enabled
 */
-void dolphiimote_determine_capabilities(uint8_t wiimote_number);
+void dolphiimote_set_rumble(uint8_t wiimote_number, uint8_t enable);
+/*
+  Request a status report from the wiimote (battery percentage, etc.)
+*/
+void dolphiimote_request_status(uint8_t wiimote_number);
 
+/*
+  Set the state of the leds
+*/
+void dolphiimote_set_leds(uint8_t wiimote_number, uint8_t leds);
 /*
   Enable different features of the wiimote.
 */
@@ -295,7 +311,7 @@ dolphiimote_GUITAR_BUTTON_* are the Classic Controller buttons, as they are save
 #define dolphiimote_GUITAR_BUTTON_STRUM_DOWN 0x4000
 #define dolphiimote_GUITAR_BUTTON_STRUM_UP 0x0001
 
-#define dolphiimote_GUITAR_BUTTON_Green 0x0010
+#define dolphiimote_GUITAR_BUTTON_GREEN 0x0010
 #define dolphiimote_GUITAR_BUTTON_RED 0x0040
 #define dolphiimote_GUITAR_BUTTON_YELLOW 0x0008
 #define dolphiimote_GUITAR_BUTTON_BLUE 0x0020
@@ -314,7 +330,9 @@ dolphiimote_GUITAR_BUTTON_* are the Classic Controller buttons, as they are save
 #define dolphiimote_EXTENSION_GUITAR_HERO_GUITAR 0x0008
 #define dolphiimote_EXTENSION_GUITAR_HERO_WORLD_TOUR_DRUMS 0x0010
 #define dolphiimote_EXTENSION_MOTION_PLUS 0x0020
-#define dolphiimote_EXTENSION_BALANCE_BOARD 0x0030
+#define dolphiimote_EXTENSION_BALANCE_BOARD 0x0040
+//Ignore passthorugh since its not an exposed id.
+#define dolphiimote_EXTENSION_UNKNOWN 0x0100
 
 /*
   dolphiimote_CAPABILITIES_* are the capabilities that can be enabled.
