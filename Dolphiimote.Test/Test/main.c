@@ -25,8 +25,9 @@ int bPause = 0;
 
 void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *data, void *userdata)
 {
-  if (bPause == 0)
-	printf("wiimote %i: ", wiimote_number);
+	if (bPause == 0) {
+		printf("wiimote %i: ", wiimote_number);
+	}
 
   if(data->button_state & dolphiimote_BUTTON_A)
   {
@@ -80,10 +81,14 @@ void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *d
 		  printf("Down ");
 		  dolphiimote_brief_rumble(wiimote_number);
 	  }
-	  if (data->button_state & dolphiimote_BUTTON_DPAD_RIGHT)
+	  if (data->button_state & dolphiimote_BUTTON_DPAD_RIGHT) {
+		  dolphiimote_set_rumble(wiimote_number, 1);
 		  printf("Right ");
-	  if (data->button_state & dolphiimote_BUTTON_DPAD_LEFT)
+	  }
+	  if (data->button_state & dolphiimote_BUTTON_DPAD_LEFT) {
+		  dolphiimote_set_rumble(wiimote_number, 0);
 		  printf("Left ");
+	  }
 	  if (data->button_state & dolphiimote_BUTTON_DPAD_UP)
 		  printf("Up ");
 	  if (data->button_state & dolphiimote_BUTTON_MINUS)
@@ -194,7 +199,6 @@ void on_capabilities_changed(uint8_t wiimote, dolphiimote_capability_status *sta
 {
   printf("wiimote %i capabilities:\n", wiimote);
   printf("Extension: (0x%012llx) ", status->extension_id);
-
   switch(status->extension_type)
   {
     case dolphiimote_EXTENSION_NONE:
@@ -270,12 +274,6 @@ void init_dolphiimote(dolphiimote_callbacks callbacks)
   int wiimote_flags;
   int i;
   wiimote_flags = dolphiimote_init(callbacks);
-
-  for(i = 0; i < dolphiimote_MAX_WIIMOTES; i++, wiimote_flags >>= 1)
-  {
-    if(wiimote_flags & 0x01)
-      dolphiimote_determine_capabilities(i);
-  }
 }
 
 int main()

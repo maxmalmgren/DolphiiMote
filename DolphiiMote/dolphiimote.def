@@ -3,6 +3,7 @@ EXPORTS
 	dolphiimote_init
 	dolphiimote_update
 	dolphiimote_set_reporting_mode
+	dolphiimote_set_leds
 	dolphiimote_request_status
 	dolphiimote_brief_rumble
 	dolphiimote_set_rumble

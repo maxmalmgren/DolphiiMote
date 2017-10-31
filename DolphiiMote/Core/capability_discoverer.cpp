@@ -43,6 +43,11 @@ namespace dolphiimote {
 	{
 		return is_set(mote.enabled_capabilities, wiimote_capabilities::Extension | wiimote_capabilities::MotionPlus);
 	}
+	void capability_discoverer::set_led_state(int wiimote_number, int led_state) {
+		auto& mote = wiimote_states[wiimote_number];
+		mote.led_state = led_state;
+		sender.send(wiimote_message(wiimote_number, { 0xa2, 0x11, (u8)led_state }, 3, true));
+	}
 	void capability_discoverer::handle_motion_plus_extension(int wiimote_number, bool extension_connected) {
 		auto& mote = wiimote_states[wiimote_number];
 		//If the motion plus is enabled, then this will reset the polling timer if a valid motion plus report is recieved
@@ -136,6 +141,7 @@ namespace dolphiimote {
 		if (callbacks.status_changed) {
 			dolphiimote_status status = { 0 };
 			status.battery_level = wiimote_states[wiimote_number].battery_percentage;
+			status.led_status = wiimote_states[wiimote_number].led_state;
 			callbacks.status_changed(wiimote_number, &status, callbacks.userdata);
 		}
 	}

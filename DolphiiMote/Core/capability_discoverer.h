@@ -36,6 +36,7 @@ namespace dolphiimote
 
     virtual void init_and_identify_extension_controller(int wiimote_number);
     virtual void send_status_request(int wiimote_number);
+	virtual void set_led_state(int wiimote_number, int led_state);
     virtual void enable(int wiimote_number, wiimote_capabilities::type capabilities_to_enable);
 	virtual void handle_motion_plus_extension(int wiimote_number, bool extension_connected);
 

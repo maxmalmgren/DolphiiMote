@@ -35,6 +35,7 @@ namespace dolphiimote {
     dolphiimote_host(dolphiimote_callbacks callbacks);
 
 	void do_rumble(int wiimote_number, bool enable);
+	void set_leds(int wiimote_number, int leds);
     void do_brief_rumble(int wiimote_number);
 	void request_status(int wiimote_number);
     void enable_capabilities(int wiimote_number, wiimote_capabilities::type capability);

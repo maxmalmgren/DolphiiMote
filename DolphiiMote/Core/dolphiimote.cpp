@@ -43,6 +43,13 @@ void dolphiimote_set_rumble(uint8_t  wiimote_number, uint8_t enable)
 
 	host->do_rumble(wiimote_number, enable);
 }
+void dolphiimote_set_leds(uint8_t  wiimote_number, uint8_t leds)
+{
+	if (!host)
+		return;
+
+	host->set_leds(wiimote_number, leds);
+}
 void dolphiimote_request_status(uint8_t  wiimote_number)
 {
 	if (!host)

@@ -55,6 +55,10 @@ namespace dolphiimote {
     return wiimotes_flag;
   }
 
+  void dolphiimote_host::set_leds(int wiimote_number, int leds)
+  {
+	  discoverer.set_led_state(wiimote_number, leds);
+  }
   void dolphiimote_host::do_rumble(int wiimote_number, bool enable)
   {
     rumble.do_rumble(wiimote_number, enable);
