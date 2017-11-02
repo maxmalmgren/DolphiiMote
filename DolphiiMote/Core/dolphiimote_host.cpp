@@ -110,8 +110,8 @@ namespace dolphiimote {
   }
   void dolphiimote_host::stop_all_sounds()
   {
-	  for (std::pair<int, wiimote> mote : current_wiimote_state) {
-		  mote.second.sound_playing = false;
+	  for (int i = 0; i < number_of_wiimotes(); i++) {
+		  stop_sound(i);
 	  }
   }
   void dolphiimote_host::update()

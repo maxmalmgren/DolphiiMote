@@ -425,7 +425,7 @@ namespace dolphiimote {
 		sender.write_register(wiimote_number, 0xa20008, 0x01, 1);
 
 		sender.send(wiimote_message(wiimote_number, { 0xa2, 0x19, 0x00 }, 3, true));
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		std::thread(std::bind(&capability_discoverer::sound_thread, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),wiimote_number, full_file, timer).detach();
 
 		log(Info, "Wiimote #%i: Playing sound, sample rate: %i", wiimote_number, sample_rate);
