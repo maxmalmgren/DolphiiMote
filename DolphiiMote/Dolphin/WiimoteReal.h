@@ -46,6 +46,7 @@ public:
 
 	void ControlChannel(const u16 channel, const void* const data, const u32 size);
 	void InterruptChannel(const u16 channel, const void* const data, const u32 size);
+	void WriteImmediately(const u16 channel, const u8* const data, const u32 size);
 	void Update();
 
 	Report ProcessReadQueue();
@@ -158,6 +159,7 @@ extern WiimoteScanner g_wiimote_scanner;
 extern Wiimote *g_wiimotes[4];
 
 void InterruptChannel(int _WiimoteNumber, u16 _channelID, const void* _pData, u32 _Size);
+void WriteImmediately(int _WiimoteNumber, u16 _channelID, const u8* _pData, u32 _Size);
 void ControlChannel(int _WiimoteNumber, u16 _channelID, const void* _pData, u32 _Size);
 void Update(int _WiimoteNumber);
 

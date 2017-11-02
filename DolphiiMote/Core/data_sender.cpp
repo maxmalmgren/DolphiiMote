@@ -63,7 +63,16 @@ namespace dolphiimote {
     {
       messages.push(message);
     }
+	void data_sender::send_now(wiimote_message &message)
+	{
+		if (message.preserve_rumble())
+		{
+			message.message()[2] &= ~(0x1);
+			message.message()[2] |= (u8)state[message.wiimote()].rumble_active();
+		}
 
+		WiimoteReal::WriteImmediately(message.wiimote(), 65, &message.message()[0], message.size());
+	}
     void data_sender::send_message(wiimote_message &message)
     {
       if(message.preserve_rumble())

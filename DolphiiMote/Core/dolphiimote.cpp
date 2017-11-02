@@ -43,6 +43,20 @@ void dolphiimote_set_rumble(uint8_t  wiimote_number, uint8_t enable)
 
 	host->do_rumble(wiimote_number, enable);
 }
+void dolphiimote_play_sound_pcm(uint8_t  wiimote_number, char* file, uint8_t volume)
+{
+	if (!host)
+		return;
+
+	host->play_sound_pcm(wiimote_number, file, volume);
+}
+void dolphiimote_stop_sound(uint8_t  wiimote_number)
+{
+	if (!host)
+		return;
+
+	host->stop_sound(wiimote_number);
+}
 void dolphiimote_set_leds(uint8_t  wiimote_number, uint8_t leds)
 {
 	if (!host)
@@ -77,7 +91,7 @@ void dolphiimote_shutdown()
 {
 	if(!host)
 	  return;
-
+	host->stop_all_sounds();
 	host.reset();
   WiimoteReal::Shutdown();
 }
@@ -89,7 +103,8 @@ void dolphiimote_log_level(uint8_t level)
 
 void dolphiimote_update()
 {
-  if(!host)
+  //If sound is playing, there is not enough bandwith available to update, so updating will freeze threads, stopping us from stopping audio.
+  if(!host || host->sound_playing())
 	  return;
 
   for(int i = 0; i < 4; i++)

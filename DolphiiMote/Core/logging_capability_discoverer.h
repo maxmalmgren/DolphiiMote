@@ -37,7 +37,14 @@ namespace dolphiimote
 		log(Info, "Wiimote #%i: Sending status request", wiimote);
 		capability_discoverer::send_status_request(wiimote);
 	}
-
+	inline virtual void play_sound_pcm(int wiimote_number, char* file, u8 volume) {
+		log(Info, "Wiimote #%i: Playing PCM Sound %s at volume %i", wiimote_number, file, volume);
+		capability_discoverer::play_sound_pcm(wiimote_number, file, volume);
+	}
+	inline virtual void stop_sound(int wiimote_number) {
+		log(Info, "Wiimote #%i: Stopping all sounds", wiimote_number);
+		capability_discoverer::stop_sound(wiimote_number);
+	}
   private:
     inline virtual void handle_extension_connected(int wiimote)
     {

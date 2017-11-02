@@ -22,6 +22,8 @@
 #include "dolphiimote.h"
 #include <chrono>
 #include <array>
+#include <iostream>
+#include <fstream>
 #include "Util/collections.h"
 #include "Util/enum.h"
 
@@ -152,6 +154,7 @@ namespace dolphiimote
 	wiimote_calibrations calibrations;
 	std::chrono::steady_clock::time_point motion_plus_last_detected;
 	u8 battery_percentage;
+	bool sound_playing = false;
   };
 
   class wiimote_message

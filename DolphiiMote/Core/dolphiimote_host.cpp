@@ -63,6 +63,12 @@ namespace dolphiimote {
   {
     rumble.do_rumble(wiimote_number, enable);
   }
+  void dolphiimote_host::stop_sound(int wiimote_number) {
+	  discoverer.stop_sound(wiimote_number);
+  }
+  void dolphiimote_host::play_sound_pcm(int wiimote_number, char* file, u8 volume) {
+	  discoverer.play_sound_pcm(wiimote_number, file, volume);
+  }
   void dolphiimote_host::do_brief_rumble(int wiimote_number)
   {
 	  rumble.do_brief_rumble(wiimote_number);
@@ -96,7 +102,18 @@ namespace dolphiimote {
 
   void dolphiimote_host::wiimote_connection_changed(int wiimote_number, bool connected)
   { }
-
+  bool dolphiimote_host::sound_playing() {
+	  for (std::pair<int, wiimote> mote : current_wiimote_state) {
+		  if (mote.second.sound_playing) return true;
+	  }
+	  return false;
+  }
+  void dolphiimote_host::stop_all_sounds()
+  {
+	  for (std::pair<int, wiimote> mote : current_wiimote_state) {
+		  mote.second.sound_playing = false;
+	  }
+  }
   void dolphiimote_host::update()
   {
     reader();

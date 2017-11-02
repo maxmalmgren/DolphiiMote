@@ -214,7 +214,14 @@ void dolphiimote_update();
   Check http://wiibrew.org/wiki/Wiimote#Data_Reporting for more information
 */
 void dolphiimote_set_reporting_mode(uint8_t wiimote_number, uint8_t mode);
-
+/*
+  Play a sound file 
+*/
+void dolphiimote_play_sound_pcm(uint8_t  wiimote_number, char* file, uint8_t volume);
+/*
+  Stop all playing sounds
+*/
+void dolphiimote_stop_sound(uint8_t  wiimote_number);
 /*
   Rumble briefly - 200 ms
 */
