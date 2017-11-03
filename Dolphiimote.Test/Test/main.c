@@ -297,7 +297,7 @@ int main()
   dolphiimote_log_level(dolphiimote_LOG_LEVEL_DEBUG);
 
   init_dolphiimote(callbacks);
-
+  dolphiimote_update();
   while(bKeepRunning)
   {
     dolphiimote_update();

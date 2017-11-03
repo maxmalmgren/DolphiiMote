@@ -411,21 +411,20 @@ namespace dolphiimote {
 		int timer = samples_per_millisecond * BYTES_PER_REPORT;
 		sample_rate = 12000000 / sample_rate;
 		
-		sender.send(wiimote_message(wiimote_number, {0xa2, 0x14, 0x04}, 3, true));
-		sender.send(wiimote_message(wiimote_number, { 0xa2, 0x19, 0x04 }, 3, true));
-		sender.write_register(wiimote_number, 0xa20009, 0x01, 1);
-		sender.write_register(wiimote_number, 0xa20001, 0x08, 1);
-		sender.write_register(wiimote_number, 0xa20001, 0x00, 1);
-		sender.write_register(wiimote_number, 0xa20002, 0x40, 1);
-		sender.write_register(wiimote_number, 0xa20003, (sample_rate & 0x20), 1);
-		sender.write_register(wiimote_number, 0xa20004, (sample_rate & 0x10), 1);
-		sender.write_register(wiimote_number, 0xa20005, volume, 1);
-		sender.write_register(wiimote_number, 0xa20006, 0x00, 1);
-		sender.write_register(wiimote_number, 0xa20007, 0x00, 1);
-		sender.write_register(wiimote_number, 0xa20008, 0x01, 1);
-
-		sender.send(wiimote_message(wiimote_number, { 0xa2, 0x19, 0x00 }, 3, true));
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		sender.send_now(wiimote_message(wiimote_number, {0xa2, 0x14, 0x04}, 3, true));
+		sender.send_now(wiimote_message(wiimote_number, { 0xa2, 0x19, 0x04 }, 3, true));
+		sender.write_register_now(wiimote_number, 0xa20009, 0x01, 1);
+		sender.write_register_now(wiimote_number, 0xa20001, 0x08, 1);
+		sender.write_register_now(wiimote_number, 0xa20001, 0x00, 1);
+		sender.write_register_now(wiimote_number, 0xa20002, 0x40, 1);
+		sender.write_register_now(wiimote_number, 0xa20003, (sample_rate & 0x20), 1);
+		sender.write_register_now(wiimote_number, 0xa20004, (sample_rate & 0x10), 1);
+		sender.write_register_now(wiimote_number, 0xa20005, volume, 1);
+		sender.write_register_now(wiimote_number, 0xa20006, 0x00, 1);
+		sender.write_register_now(wiimote_number, 0xa20007, 0x00, 1);
+		sender.write_register_now(wiimote_number, 0xa20008, 0x01, 1);
+		
+		sender.send_now(wiimote_message(wiimote_number, { 0xa2, 0x19, 0x00 }, 3, true));
 		std::thread(std::bind(&capability_discoverer::sound_thread, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),wiimote_number, full_file, timer).detach();
 
 		log(Info, "Wiimote #%i: Playing sound, sample rate: %i", wiimote_number, sample_rate);
