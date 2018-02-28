@@ -19,9 +19,15 @@
 #define DOLPHIIMOTE_CAPABILITY_DISCOVERER_H
 
 #include <map>
+#include <chrono>
+#include <list>
 #include "wiimote.h"
 #include "data_sender.h"
 #include "wiimote_reader.h"
+#include <thread>
+#include <iostream>
+#include <fstream>
+#include <Windows.h>
 
 namespace dolphiimote
 {
@@ -36,6 +42,8 @@ namespace dolphiimote
 
     virtual void init_and_identify_extension_controller(int wiimote_number);
     virtual void send_status_request(int wiimote_number);
+	virtual void play_sound_pcm(int wiimote_number, char* file, u8 volume);
+	virtual void stop_sound(int wiimote_number);
 	virtual void set_led_state(int wiimote_number, int led_state);
     virtual void enable(int wiimote_number, wiimote_capabilities::type capabilities_to_enable);
 	virtual void handle_motion_plus_extension(int wiimote_number, bool extension_connected);
@@ -60,13 +68,17 @@ namespace dolphiimote
     virtual void enable_only_extension(int wiimote);
     virtual void handle_extension_connected(int wiimote);
     virtual void handle_extension_disconnected(int wiimote);
+	virtual void sound_thread(int wiimote_number, std::list <std::array<u8, 23>> full_file, int pause);
 
     u64 capability_discoverer::read_extension_id(checked_array<const u8> data);
-
     std::map<int, wiimote> &wiimote_states;
     dolphiimote_callbacks callbacks;
     data_sender &sender;
     wiimote_reader &reader;
+	const int BYTES_PER_REPORT = 20;
+	const int PCM_MAGIC = 0x2e736e64;
+	const int PCM_ENCODING = 0x02;
   };
 }
+
 #endif

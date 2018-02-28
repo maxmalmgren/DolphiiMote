@@ -36,10 +36,14 @@ namespace dolphiimote {
 
 	void do_rumble(int wiimote_number, bool enable);
 	void set_leds(int wiimote_number, int leds);
+	void play_sound_pcm(int wiimote_number, char* file, u8 volume);
+	void stop_sound(int wiimote_number);
+	void stop_all_sounds();
     void do_brief_rumble(int wiimote_number);
 	void request_status(int wiimote_number);
     void enable_capabilities(int wiimote_number, wiimote_capabilities::type capability);
     void request_reporting_mode(int wiimote_number, u8 mode);
+	bool sound_playing();
     virtual void data_received(int wiimote_number, const u16 channel, const void* const data, const u32 size);
     virtual void wiimote_connection_changed(int wiimote_number, bool connected);
     void update();

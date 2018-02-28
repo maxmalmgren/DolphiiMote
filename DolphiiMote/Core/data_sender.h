@@ -32,8 +32,10 @@ namespace dolphiimote {
     void write_register(int wiimote_number, u32 address, std::array<u8, 16> bytes, u8 size);
     void write_register(int wiimote_number, u32 address, uint64_t bytes, u8 size, std::function<void(int)> callback);
     void write_register(int wiimote_number, u32 address, uint64_t bytes, u8 size);
+	void write_register_now(int wiimote_number, u32 address, uint64_t bytes, u8 size);
 
     void send(const wiimote_message &message);
+	void send_now(wiimote_message &message);
 
   private:
     void send_message(wiimote_message &message);

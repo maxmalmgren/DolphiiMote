@@ -63,7 +63,27 @@ namespace dolphiimote {
     {
       messages.push(message);
     }
+	void data_sender::write_register_now(int wiimote_number, u32 address, uint64_t bytes, u8 size)
+	{
+		std::array<u8, 23> data = { 0xA2, 0x16, 0x04, address >> 16, address >> 8, address , size };
 
+		std::memset(data.data() + 7, 0, 16);
+
+		for (int i = 0; i < size; i++)
+			data[7 + size - 1 - i] = (u8)(bytes >> (i * 8));
+
+		send_now(wiimote_message(wiimote_number, data, 23));
+	}
+	void data_sender::send_now(wiimote_message &message)
+	{
+		if (message.preserve_rumble())
+		{
+			message.message()[2] &= ~(0x1);
+			message.message()[2] |= (u8)state[message.wiimote()].rumble_active();
+		}
+
+		WiimoteReal::WriteImmediately(message.wiimote(), 65, &message.message()[0], message.size());
+	}
     void data_sender::send_message(wiimote_message &message)
     {
       if(message.preserve_rumble())

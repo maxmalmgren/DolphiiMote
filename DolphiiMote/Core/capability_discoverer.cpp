@@ -16,9 +16,14 @@
 // along with DolphiiMote.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "capability_discoverer.h"
-#include <chrono>
+#include <list>
+#include <iterator>
 #include <thread>
-
+#include "../Dolphin/WiimoteReal.h"
+#define NTOHL(n) (((((unsigned long)(n) & 0xFF)) << 24) | \
+                  ((((unsigned long)(n) & 0xFF00)) << 8) | \
+                  ((((unsigned long)(n) & 0xFF0000)) >> 8) | \
+                  ((((unsigned long)(n) & 0xFF000000)) >> 24))
 namespace dolphiimote {
 	const int MAX_BATTERY_VALUE = 0xc8;
 	void capability_discoverer::data_received(dolphiimote_callbacks &callbacks, int wiimote_number, checked_array<const u8> data)
@@ -101,7 +106,6 @@ namespace dolphiimote {
 	void capability_discoverer::handle_extension_controller_changed(bool extension_controller_connected, int wiimote, bool& changed)
 	{
 		auto& mote = wiimote_states[wiimote];
-		printf("State changed to: %d", extension_controller_connected);
 		if (extension_controller_connected && !is_set(mote.available_capabilities, wiimote_capabilities::Extension))
 		{
 			handle_extension_connected(wiimote);
@@ -348,10 +352,87 @@ namespace dolphiimote {
 		//According to wiibrew: init by writing 0x55 to 0x(4)A400F0, then writing 0x00 to 0x(4)A400FB
 	}
 
+	void capability_discoverer::sound_thread(int wiimote_number, std::list<std::array<u8, 23>> full_file, int pause) {
+		auto& mote = wiimote_states[wiimote_number];
+		mote.sound_playing = true;
+		for (std::array<u8, 23> frame : full_file) {
+			if (!mote.sound_playing) break;
+			std::this_thread::sleep_for(std::chrono::milliseconds(pause));
+			sender.send_now(wiimote_message(wiimote_number, frame, 23, true));
+		}
+	}
+	void capability_discoverer::stop_sound(int wiimote_number)
+	{
+		wiimote_states[wiimote_number].sound_playing = false;
+		//Mute speaker
+		sender.send_now(wiimote_message(wiimote_number, { 0xa2, 0x19, 0x04 }, 3, true));
+		//Disable speaker
+		sender.send_now(wiimote_message(wiimote_number, { 0xa2, 0x14, 0x00 }, 3, true));
+	}
+	void capability_discoverer::play_sound_pcm(int wiimote_number, char* file, u8 volume)
+	{
+		auto& mote = wiimote_states[wiimote_number];
+		mote.sound_playing = false;
+		std::ifstream speaker_file(file, std::ios::binary | std::ios::in);
+		std::list <std::array<u8, 23>> full_file;
+		uint32_t temp;
+		speaker_file.read(reinterpret_cast<char *>(&temp), sizeof(temp));
+		//big_endian to little_endian
+		temp = NTOHL(temp);
+		if (temp != PCM_MAGIC) {
+			log(Info, "Wiimote #%i: Unable to play sound, invalid header magic constant", wiimote_number);
+			return;
+		}
+		speaker_file.seekg(4 * 3);
+		speaker_file.read(reinterpret_cast<char *>(&temp), sizeof(temp));
+		temp = NTOHL(temp);
+		if (temp != PCM_ENCODING) {
+			log(Info, "Wiimote #%i: Unable to play sound, invalid encoding", wiimote_number);
+			return;
+		}
+		speaker_file.read(reinterpret_cast<char *>(&temp), sizeof(temp));
+		temp = NTOHL(temp);
+		int sample_rate = temp;
+		log(Info, "Wiimote #%i: Playing sound, sample rate: %i", wiimote_number, sample_rate);
+		speaker_file.seekg(0);
+		char* speaker_data = new char[20];
+		u8 read_bytes = 0;
+		do {
+			speaker_file.read(speaker_data, 20);
+			read_bytes = speaker_file.gcount();
+			std::array<u8, 23> data_to_send = { 0xa2,0x18,read_bytes << 3 };
+			for (int i = 0; i < 20; i++) {
+				data_to_send[i + 3] = speaker_data[i];
+			}
+			full_file.push_back(data_to_send);
+		} while (read_bytes > 0);
+		speaker_file.close();
+		float samples_per_millisecond = ((1 / sample_rate) * 1000);
+		int timer = samples_per_millisecond * BYTES_PER_REPORT;
+		sample_rate = 12000000 / sample_rate;
+		
+		sender.send_now(wiimote_message(wiimote_number, {0xa2, 0x14, 0x04}, 3, true));
+		sender.send_now(wiimote_message(wiimote_number, { 0xa2, 0x19, 0x04 }, 3, true));
+		sender.write_register_now(wiimote_number, 0xa20009, 0x01, 1);
+		sender.write_register_now(wiimote_number, 0xa20001, 0x08, 1);
+		sender.write_register_now(wiimote_number, 0xa20001, 0x00, 1);
+		sender.write_register_now(wiimote_number, 0xa20002, 0x40, 1);
+		sender.write_register_now(wiimote_number, 0xa20003, (sample_rate & 0x20), 1);
+		sender.write_register_now(wiimote_number, 0xa20004, (sample_rate & 0x10), 1);
+		sender.write_register_now(wiimote_number, 0xa20005, volume, 1);
+		sender.write_register_now(wiimote_number, 0xa20006, 0x00, 1);
+		sender.write_register_now(wiimote_number, 0xa20007, 0x00, 1);
+		sender.write_register_now(wiimote_number, 0xa20008, 0x01, 1);
+		
+		sender.send_now(wiimote_message(wiimote_number, { 0xa2, 0x19, 0x00 }, 3, true));
+		std::thread(std::bind(&capability_discoverer::sound_thread, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),wiimote_number, full_file, timer).detach();
+
+		log(Info, "Wiimote #%i: Playing sound, sample rate: %i", wiimote_number, sample_rate);
+	}
 
 	void capability_discoverer::send_status_request(int wiimote_number)
 	{
-		sender.send(wiimote_message(wiimote_number, {0xa2, 0x15, 0}, 3, true));
+		sender.send(wiimote_message(wiimote_number, { 0xa2, 0x15, 0 }, 3, true));
 	}
 
 	void capability_discoverer::enable_motion_plus_no_passthrough(int wiimote_number)
@@ -380,7 +461,7 @@ namespace dolphiimote {
 
 	void capability_discoverer::enable_motion_plus_extension_passthrough(int wiimote_number)
 	{
-		wiimote mote = wiimote_states[wiimote_number];
+		auto& mote = wiimote_states[wiimote_number];
 		//If we have no idea what is currently plugged into the motion plus, swap to direct to get an id, then swap back to passthrough.
 		if (mote.extension_id == 0) {
 			printf("Could not detect id, refreshing...");

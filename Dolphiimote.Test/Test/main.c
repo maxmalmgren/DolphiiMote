@@ -72,8 +72,16 @@ void on_data_received(uint8_t wiimote_number, struct dolphiimote_wiimote_data *d
 	  else
 		  bPause = 1;
 	  Sleep(500);
+	  state = 2 + 10 * wiimote_number;
   }
 
+  if (data->button_state & dolphiimote_BUTTON_DPAD_RIGHT) {
+	  if (state != 5 + 10 * wiimote_number)
+	  {
+		  state = 5 + 10 * wiimote_number;
+		  dolphiimote_set_rumble(wiimote_number, 1);
+	  }
+  }
   if (bPause == 0)
   {
 	  if (data->button_state & dolphiimote_BUTTON_DPAD_DOWN)
@@ -289,7 +297,7 @@ int main()
   dolphiimote_log_level(dolphiimote_LOG_LEVEL_DEBUG);
 
   init_dolphiimote(callbacks);
-
+  dolphiimote_update();
   while(bKeepRunning)
   {
     dolphiimote_update();

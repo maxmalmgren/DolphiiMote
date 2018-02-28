@@ -185,14 +185,14 @@ void Wiimote::InterruptChannel(const u16 channel, const void* const _data, const
 			leds_rpt.leds = 0xf;
 		}
 	}*/
-	if (rpt.first[1] == WM_WRITE_SPEAKER_DATA)
+	/*if (rpt.first[1] == WM_WRITE_SPEAKER_DATA)
 	{
 		// Translate speaker data reports into rumble reports.
 		rpt.first[1] = WM_CMD_RUMBLE;
 		// Keep only the rumble bit.
 		rpt.first[2] &= 0x1;
 		rpt.second = 3;
-	}
+	}*/
 
 	m_write_reports.Push(rpt);
 }
@@ -220,7 +220,9 @@ bool Wiimote::Read()
 	delete[] rpt.first;
 	return false;
 }
-
+void Wiimote::WriteImmediately(const u16 channel, const u8* const data, const u32 size) {
+	IOWrite(data, size);
+}
 bool Wiimote::Write()
 {
 	if (!m_write_reports.Empty())
@@ -228,7 +230,6 @@ bool Wiimote::Write()
 		Report const& rpt = m_write_reports.Front();
 		
 		bool const is_speaker_data = rpt.first[1] == WM_WRITE_SPEAKER_DATA;
-		
 		if (!is_speaker_data || m_last_audio_report.GetTimeDifference() > 5)
 		{
 			IOWrite(rpt.first, rpt.second);
@@ -602,6 +603,13 @@ void Refresh()
 	Initialize();
 }
 
+void WriteImmediately(int _WiimoteNumber, u16 _channelID, const u8* _pData, u32 _Size)
+{
+	std::lock_guard<std::recursive_mutex> lk(g_refresh_lock);
+
+	if (g_wiimotes[_WiimoteNumber])
+		g_wiimotes[_WiimoteNumber]->WriteImmediately(_channelID, _pData, _Size);
+}
 void InterruptChannel(int _WiimoteNumber, u16 _channelID, const void* _pData, u32 _Size)
 {
 	std::lock_guard<std::recursive_mutex> lk(g_refresh_lock);

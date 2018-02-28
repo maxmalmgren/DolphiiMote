@@ -472,7 +472,10 @@ int Wiimote::IOWrite(const u8* buf, int len)
 			}
 			else
 			{
-				WARN_LOG(WIIMOTE, "IOWrite[MSBT_STACK_MS]: ERROR: %08x", err);
+				if (err != 0x00000015) {
+					//Printing errors is less useful if the error slows down communication
+					WARN_LOG(WIIMOTE, "IOWrite[MSBT_STACK_MS]: ERROR: %08x", err);
+				}
 			}
 		}
 
